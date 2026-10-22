@@ -40,6 +40,6 @@ jobs:
           # 只发布静态产物：源码目录（data/scripts/templates）与包描述文件不上线
           tar cf - --exclude=.git --exclude=.github --exclude=.user.ini --exclude=.workbuddy \
             --exclude=data --exclude=scripts --exclude=templates --exclude=package.json \
-            --exclude=.editorconfig --exclude=.gitattributes --exclude=.gitignore . \
+            --exclude=deploy --exclude=.editorconfig --exclude=.gitattributes --exclude=.gitignore . \
             | ssh -i /root/.ssh/id_rsa -o StrictHostKeyChecking=accept-new root@60.205.214.88 \
               "mkdir -p /www/wwwroot/store.fangkelianmeng.com ; cd /www/wwwroot/store.fangkelianmeng.com ; tar xmf -"
