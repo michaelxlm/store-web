@@ -1,0 +1,81 @@
+        <section class="page-heading">
+          <h1 id="me-title">新建店铺</h1>
+          <p>店铺资料会展示在同城找店与店铺详情页</p>
+        </section>
+
+        <div class="merchant-shell">
+          <nav class="merchant-nav" aria-label="商家中心导航">
+            <a href="/merchant/index.html">商家中心</a>
+            <a href="/merchant/stores.html" class="active" aria-current="page">我的店铺</a>
+            <a href="/merchant/plans.html">套餐与续费</a>
+            <a href="/merchant/content.html">内容营销</a>
+            <a href="/shop/city.html">同城找店</a>
+            <a href="/shop/shop.html">返回前台</a>
+          </nav>
+
+          <div class="merchant-main">
+            <div class="merchant-card">
+              <form class="merchant-form" id="me-form" novalidate>
+                <label class="field">
+                  <span class="field-label">店铺名称 <span class="merchant-required">*</span></span>
+                  <input class="input" type="text" id="me-name" placeholder="顾客看到的店铺名" maxlength="40">
+                </label>
+
+                <div class="form-grid">
+                  <label class="field">
+                    <span class="field-label">所在城市</span>
+                    <input class="input" type="text" id="me-city" placeholder="如：长春" maxlength="20">
+                  </label>
+                  <label class="field">
+                    <span class="field-label">主营品类</span>
+                    <input class="input" type="text" id="me-category" placeholder="如：电动车 / 餐饮 / 零售" maxlength="20">
+                  </label>
+                </div>
+
+                <label class="field">
+                  <span class="field-label">联系电话</span>
+                  <input class="input" type="tel" id="me-phone" placeholder="顾客咨询电话" maxlength="30">
+                </label>
+
+                <div class="field">
+                  <span class="field-label">店铺位置</span>
+                  <input class="input" type="text" id="me-position" placeholder="详细地址，如：朝阳区xx路xx号" maxlength="80">
+                  <div class="merchant-geo-row">
+                    <input class="input" type="number" id="me-latitude" placeholder="纬度（可选）" step="0.000001" aria-label="纬度">
+                    <input class="input" type="number" id="me-longitude" placeholder="经度（可选）" step="0.000001" aria-label="经度">
+                    <span class="merchant-geo-none" id="me-geo-tip">填写经纬度后可被「就近门店」检索</span>
+                  </div>
+                </div>
+
+                <div class="field">
+                  <span class="field-label">店铺 Logo</span>
+                  <div class="merchant-upload-row">
+                    <button class="merchant-upload-box" type="button" id="me-logo-box" aria-label="上传店铺 Logo">
+                      <img id="me-logo-img" alt="" hidden>
+                      <span id="me-logo-plus">＋ 上传</span>
+                      <span class="is-busy" id="me-logo-busy" hidden>上传中…</span>
+                    </button>
+                    <div class="merchant-upload-side">
+                      <span class="field-hint">点击选择图片上传，也可直接粘贴外链</span>
+                      <input class="input" type="text" id="me-logo" placeholder="https:// 图片链接（可留空）">
+                      <button class="merchant-link-clear" type="button" id="me-logo-clear" hidden>清除 Logo</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="field">
+                  <span class="field-label">店铺简介</span>
+                  <textarea class="textarea" id="me-describe" placeholder="一句话介绍店铺亮点、主营商品与服务" maxlength="300"></textarea>
+                  <span class="merchant-counter" id="me-counter">0/300</span>
+                </div>
+
+                <div class="merchant-banner merchant-banner--info">新建店铺默认不进入「同城找店」公域，需选购基础年费套餐开通；公域展示中的店铺编辑后立即生效，到期自动下线。</div>
+
+                <div class="form-actions">
+                  <button class="btn btn-primary" type="submit" id="me-submit">创建店铺</button>
+                  <a class="btn" href="/merchant/stores.html">返回列表</a>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>

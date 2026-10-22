@@ -1,0 +1,47 @@
+:root {
+  /* 品牌色：沿用 main-store H5 主色 */
+  --primary: #4B5BF0;
+  --primary-strong: #3A46D6;
+  --primary-weak: #EEF0FF;
+  --primary-soft: rgba(75, 91, 240, .12);
+  --accent: #007AFF;
+
+  /* 中性色 */
+  --bg: #F7F8FA;
+  --surface: #FFFFFF;
+  --surface-2: #F2F3F7;
+  --surface-3: #E9EBF2;
+  --text: #1C1C1E;
+  --text-2: #4B4B50;
+  --muted: #8E8E93;
+  --line: #E5E6EB;
+  --line-strong: #D5D7E0;
+
+  /* 语义色 */
+  --success: #2FB344;
+  --success-weak: #EAF7EC;
+  --warning: #F59E0B;
+  --warning-weak: #FFF7E6;
+  --danger: #F04438;
+  --danger-weak: #FEECEB;
+
+  /* 圆角与阴影 */
+  --radius-xs: 6px;
+  --radius-s: 9px;
+  --radius: 12px;
+  --radius-l: 16px;
+  --radius-xl: 22px;
+  --shadow-s: 0 1px 2px rgba(16, 24, 40, .05);
+  --shadow: 0 8px 24px rgba(16, 24, 40, .08);
+  --shadow-lg: 0 18px 48px rgba(16, 24, 40, .14);
+
+  /* 布局 */
+  --header-h: 64px;
+  --sidebar-w: 220px;
+  --main-max: 1240px;
+  --mobile-nav-h: 62px;
+
+  /* 字体 */
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}

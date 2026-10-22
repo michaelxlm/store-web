@@ -1,0 +1,27 @@
+/* 搜索页：历史词条内嵌删除按钮 */
+.search-history-item { display: inline-flex; align-items: center; gap: 2px; padding: 0 8px 0 0; }
+
+.search-history-word {
+  border: 0;
+  background: transparent;
+  padding: 6px 6px 6px 12px;
+  font-size: 12.5px;
+  color: var(--text-2);
+  cursor: pointer;
+}
+
+.search-history-del {
+  border: 0;
+  background: transparent;
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 14px;
+  line-height: 1;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.search-history-del:hover { background: var(--surface-2); color: var(--danger); }

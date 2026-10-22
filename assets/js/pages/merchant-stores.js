@@ -1,0 +1,192 @@
+/* 我的店铺：列表 / 新建入口 / 编辑传参 / 删除 */
+(function () {
+  'use strict';
+
+  var Utils = window.Utils;
+  var HttpApi = window.HttpApi;
+  var Merchant = window.Merchant;
+
+  if (!Merchant) return;
+  if (!Merchant.requireLogin()) return;
+
+  var EDIT_KEY = 'merchant_store_editing';
+  var state = { list: [], loading: true, status: '', maxStores: null, busy: false };
+
+  function $(id) { return document.getElementById(id); }
+
+  function esc(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function itemId(item) {
+    return item && (item._id || item.id) || '';
+  }
+
+  function canCreate() {
+    return state.status === 'approved';
+  }
+
+  function goCreate() {
+    if (!canCreate()) {
+      Merchant.toast('账号审核通过后才能开店');
+      return;
+    }
+    if (state.maxStores != null && state.list.length >= state.maxStores) {
+      Merchant.toast('店铺数量已达上限（' + state.maxStores + ' 家）');
+      return;
+    }
+    try { localStorage.removeItem(EDIT_KEY); } catch (e) { /* ignore */ }
+    window.location.href = '/merchant/store-edit.html';
+  }
+
+  function goEdit(item) {
+    try { localStorage.setItem(EDIT_KEY, JSON.stringify(item)); } catch (e) { /* ignore */ }
+    window.location.href = '/merchant/store-edit.html?id=' + encodeURIComponent(itemId(item));
+  }
+
+  function remove(item) {
+    if (state.busy) return;
+    Merchant.confirm('确定删除「' + (item.name || '该店铺') + '」吗？删除后不可恢复', {
+      title: '删除店铺',
+      okText: '删除',
+      danger: true
+    }).then(function (ok) {
+      if (!ok) return;
+      state.busy = true;
+      HttpApi.merchant.storeDelete(itemId(item)).then(function (res) {
+        state.busy = false;
+        if (Merchant.authExpired(res)) return;
+        if (res && res.code === 0) {
+          Merchant.toast('已删除');
+          Utils.track('merchant_store_delete', { id: itemId(item) });
+          loadList();
+        } else {
+          Merchant.toast((res && res.msg) || '删除失败');
+        }
+      }).catch(function () {
+        state.busy = false;
+        Merchant.toast('网络异常，请稍后重试');
+      });
+    });
+  }
+
+  function render() {
+    var list = state.list;
+    $('ms-count').textContent = '共 ' + list.length + ' 家店铺';
+    var publicCount = list.filter(function (s) { return s.isPublic; }).length;
+    $('ms-sub').textContent = '公域展示 ' + publicCount + ' 家';
+
+    var box = $('ms-list');
+    var empty = $('ms-empty');
+
+    if (!list.length) {
+      if (state.loading) {
+        box.hidden = false;
+        box.innerHTML = '<div class="loading"><span class="spinner" aria-hidden="true"></span><span>加载店铺…</span></div>';
+        empty.hidden = true;
+        return;
+      }
+      box.innerHTML = '';
+      box.hidden = true;
+      empty.hidden = false;
+      $('ms-empty-desc').textContent = canCreate() ? '创建第一家店铺，开通年费套餐后即可进入公域展示' : '账号审核通过后即可创建店铺';
+      $('ms-empty-add').hidden = !canCreate();
+      return;
+    }
+
+    box.hidden = false;
+    empty.hidden = true;
+
+    var html = list.map(function (item) {
+      var logo = Utils.firstImage(item.logo) || '';
+      var meta = [];
+      if (item.city) meta.push('<span class="merchant-tag">' + esc(item.city) + '</span>');
+      if (item.category) meta.push('<span class="merchant-tag">' + esc(item.category) + '</span>');
+      if (item.isPublic && item.expireAt) meta.push('<span class="merchant-status merchant-status--warn">到期 ' + esc(Merchant.fmtDate(item.expireAt)) + '</span>');
+
+      return '<div class="merchant-item" data-id="' + esc(itemId(item)) + '">' +
+        '<div class="merchant-thumb">🏪' +
+          (logo ? '<img class="merchant-thumb-img" src="' + esc(logo) + '" alt="" loading="lazy" onerror="this.hidden=true">' : '') +
+        '</div>' +
+        '<div class="merchant-item-main">' +
+          '<div class="merchant-item-head">' +
+            '<span class="merchant-item-title">' + esc(item.name || '未命名店铺') + '</span>' +
+            '<span class="merchant-status ' + (item.isPublic ? 'merchant-status--on' : '') + '">' + (item.isPublic ? '公域展示中' : '未上公域') + '</span>' +
+          '</div>' +
+          (meta.length ? '<div class="merchant-item-meta">' + meta.join('') + '</div>' : '') +
+          (item.describe ? '<div class="merchant-item-sub">' + esc(item.describe) + '</div>' : '') +
+          '<div class="merchant-item-actions">' +
+            '<button class="merchant-action" type="button" data-action="edit">编辑资料</button>' +
+            (item.isPublic
+              ? '<span class="merchant-action merchant-action--muted">公域中不可删除</span>'
+              : '<button class="merchant-action merchant-action--danger" type="button" data-action="delete">删除</button>') +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    box.innerHTML = html;
+  }
+
+  function loadStatus() {
+    return HttpApi.merchant.info().then(function (res) {
+      if (Merchant.authExpired(res)) return;
+      if (res && res.code === 0 && res.data && res.data.merchant) {
+        state.status = res.data.merchant.status || '';
+        HttpApi.session.updateProfile(res.data.merchant);
+      }
+    }).catch(function () { /* 非阻断 */ });
+  }
+
+  function loadList() {
+    state.loading = true;
+    return HttpApi.merchant.storeList({ pageIndex: 1, pageSize: 50 }).then(function (res) {
+      state.loading = false;
+      if (Merchant.authExpired(res)) return;
+      if (res && res.code === 0) {
+        state.list = res.rows || [];
+        if (typeof res.maxStores === 'number') state.maxStores = res.maxStores;
+      } else {
+        state.list = [];
+        Merchant.toast((res && res.msg) || '加载店铺失败');
+      }
+      render();
+    }).catch(function () {
+      state.loading = false;
+      Merchant.toast('网络异常，请稍后重试');
+      render();
+    });
+  }
+
+  function bindEvents() {
+    $('ms-add').addEventListener('click', goCreate);
+    $('ms-empty-add').addEventListener('click', goCreate);
+    $('ms-list').addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      var row = btn.closest('.merchant-item');
+      if (!row) return;
+      var id = row.getAttribute('data-id');
+      var item = state.list.filter(function (s) { return String(itemId(s)) === String(id); })[0];
+      if (!item) return;
+      if (btn.getAttribute('data-action') === 'edit') goEdit(item);
+      else if (btn.getAttribute('data-action') === 'delete') remove(item);
+    });
+  }
+
+  function init() {
+    if (!HttpApi) return;
+    Utils.track('merchant_stores_visit', {});
+    bindEvents();
+    render();
+    loadStatus().then(loadList);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();

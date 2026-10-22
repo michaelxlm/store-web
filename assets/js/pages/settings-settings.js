@@ -1,0 +1,81 @@
+/* 设置：缓存统计与清理确认 */
+(function () {
+  'use strict';
+
+  var Utils = window.Utils;
+
+  var modal = document.getElementById('settings-modal');
+  var sizeEl = document.getElementById('settings-size');
+
+  function formatSize(bytes) {
+    var b = Number(bytes) || 0;
+    if (b < 1024) return b + ' B';
+    if (b < 1024 * 1024) return (b / 1024).toFixed(2) + ' KB';
+    return (b / 1024 / 1024).toFixed(2) + ' MB';
+  }
+
+  function storageSize() {
+    var total = 0;
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        var key = localStorage.key(i) || '';
+        var value = localStorage.getItem(key) || '';
+        total += (key.length + value.length) * 2;
+      }
+    } catch (e) {
+      total = 0;
+    }
+    return total;
+  }
+
+  function refreshSize() {
+    if (!sizeEl) return;
+    sizeEl.textContent = formatSize(storageSize());
+  }
+
+  function openModal() {
+    if (!modal) return;
+    modal.classList.add('is-open');
+    var confirmBtn = document.getElementById('settings-confirm');
+    if (confirmBtn) confirmBtn.focus();
+  }
+
+  function closeModal() {
+    if (modal) modal.classList.remove('is-open');
+  }
+
+  function clearCache() {
+    var count = 0;
+    try {
+      count = localStorage.length;
+      localStorage.clear();
+    } catch (e) {
+      count = 0;
+    }
+    closeModal();
+    refreshSize();
+    Utils.toast(count ? '缓存已清理' : '暂无可清理的缓存');
+    Utils.track('cache_clear', { keys: count });
+  }
+
+  function init() {
+    if (!modal || !sizeEl) return;
+    refreshSize();
+
+    document.getElementById('settings-clear').addEventListener('click', openModal);
+    document.getElementById('settings-cancel').addEventListener('click', closeModal);
+    document.getElementById('settings-confirm').addEventListener('click', clearCache);
+    modal.addEventListener('click', function (e) {
+      if (e.target === modal) closeModal();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') closeModal();
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();

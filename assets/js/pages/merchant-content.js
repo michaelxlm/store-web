@@ -1,0 +1,245 @@
+/* 内容营销列表：类型切换 / 新建 / 编辑 / 分享 / 删除 */
+(function () {
+  'use strict';
+
+  var Utils = window.Utils;
+  var HttpApi = window.HttpApi;
+  var Merchant = window.Merchant;
+
+  if (!Merchant) return;
+  if (!Merchant.requireLogin()) return;
+
+  var EDIT_KEY = 'merchant_content_editing';
+  var TYPES = [
+    { value: 'article', label: '文章', icon: '📰' },
+    { value: 'qa', label: '问答', icon: '❓' },
+    { value: 'video', label: '视频', icon: '🎬' }
+  ];
+
+  var state = { type: 'article', list: [], loading: true, busy: false };
+
+  function $(id) { return document.getElementById(id); }
+
+  function esc(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function typeMeta(value) {
+    return TYPES.filter(function (t) { return t.value === value; })[0] || TYPES[0];
+  }
+
+  function itemId(item) {
+    return item && (item._id || item.id) || '';
+  }
+
+  function titleOf(item) {
+    return item.title || item.name || '未命名';
+  }
+
+  function briefOf(item) {
+    if (state.type === 'article') return item.summary || String(item.content || '').slice(0, 60) || '';
+    if (state.type === 'qa') return item.answer || '';
+    return item.describe || item.video_desc || '';
+  }
+
+  function isOnline(item) {
+    if (state.type === 'video') return item.is_published === true || item.status === '0';
+    return item.status === '0';
+  }
+
+  function linkCount(item, key) {
+    return item.links && Array.isArray(item.links[key]) ? item.links[key].length : 0;
+  }
+
+  function syncHead() {
+    var meta = typeMeta(state.type);
+    $('mc-count').textContent = '共 ' + state.list.length + ' 条' + meta.label;
+    $('mc-add').textContent = '+ 新建' + meta.label;
+    $('mc-empty-title').textContent = '还没有' + meta.label;
+    $('mc-empty-desc').textContent = '创作' + meta.label + '并关联商品/店铺，顾客在浏览商品和店铺时即可看到';
+    Array.prototype.forEach.call(document.querySelectorAll('#mc-tabs .tab'), function (btn) {
+      var on = btn.getAttribute('data-type') === state.type;
+      btn.classList.toggle('is-active', on);
+      btn.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+  }
+
+  function render() {
+    var meta = typeMeta(state.type);
+    var box = $('mc-list');
+    var empty = $('mc-empty');
+    syncHead();
+
+    if (!state.list.length) {
+      if (state.loading) {
+        box.hidden = false;
+        box.innerHTML = '<div class="loading"><span class="spinner" aria-hidden="true"></span><span>加载内容…</span></div>';
+        empty.hidden = true;
+        return;
+      }
+      box.innerHTML = '';
+      box.hidden = true;
+      empty.hidden = false;
+      return;
+    }
+
+    box.hidden = false;
+    empty.hidden = true;
+
+    box.innerHTML = state.list.map(function (item) {
+      var cover = Utils.firstImage(item.cover) || '';
+      var tags = [];
+      if (linkCount(item, 'goods')) tags.push('<span class="merchant-tag">关联商品 ' + linkCount(item, 'goods') + '</span>');
+      if (linkCount(item, 'stores')) tags.push('<span class="merchant-tag">关联店铺 ' + linkCount(item, 'stores') + '</span>');
+      if (item.expireAt) tags.push('<span class="merchant-status merchant-status--warn">到期 ' + esc(Merchant.fmtDate(item.expireAt)) + '</span>');
+
+      return '<div class="merchant-item" data-id="' + esc(itemId(item)) + '">' +
+        '<div class="merchant-thumb">' + meta.icon +
+          (cover ? '<img class="merchant-thumb-img" src="' + esc(cover) + '" alt="" loading="lazy" onerror="this.hidden=true">' : '') +
+        '</div>' +
+        '<div class="merchant-item-main">' +
+          '<div class="merchant-item-head">' +
+            '<span class="merchant-item-title">' + esc(titleOf(item)) + '</span>' +
+            '<span class="merchant-status ' + (isOnline(item) ? 'merchant-status--on' : '') + '">' + (isOnline(item) ? '展示中' : '未展示') + '</span>' +
+          '</div>' +
+          (briefOf(item) ? '<div class="merchant-item-sub">' + esc(briefOf(item)) + '</div>' : '') +
+          (tags.length ? '<div class="merchant-item-meta">' + tags.join('') + '</div>' : '') +
+          '<div class="merchant-item-actions">' +
+            '<button class="merchant-action" type="button" data-action="edit">编辑</button>' +
+            '<button class="merchant-action" type="button" data-action="share">分享</button>' +
+            '<button class="merchant-action merchant-action--danger" type="button" data-action="delete">删除</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function goCreate() {
+    try { localStorage.removeItem(EDIT_KEY); } catch (e) { /* ignore */ }
+    window.location.href = '/merchant/content-edit.html?type=' + state.type;
+  }
+
+  function goEdit(item) {
+    try { localStorage.setItem(EDIT_KEY, JSON.stringify(item)); } catch (e) { /* ignore */ }
+    window.location.href = '/merchant/content-edit.html?type=' + state.type + '&id=' + encodeURIComponent(itemId(item));
+  }
+
+  function share(item) {
+    var id = itemId(item);
+    var url = '';
+    if (state.type === 'video') {
+      var videoUrl = item.video_url || item.url || '';
+      if (!videoUrl) {
+        Merchant.toast('视频地址缺失，无法预览');
+        return;
+      }
+      url = '/media/video-play.html?url=' + encodeURIComponent(videoUrl) +
+        '&poster=' + encodeURIComponent(Utils.firstImage(item.cover) || '') +
+        '&title=' + encodeURIComponent(item.name || '视频') +
+        '&desc=' + encodeURIComponent(item.video_desc || item.describe || '');
+    } else {
+      url = '/article/detail.html?id=' + encodeURIComponent(id);
+    }
+    Utils.track('merchant_content_share', { type: state.type, id: id });
+    window.location.href = url;
+  }
+
+  function remove(item) {
+    if (state.busy) return;
+    Merchant.confirm('确定删除「' + titleOf(item) + '」吗？删除后不可恢复', {
+      title: '删除内容',
+      okText: '删除',
+      danger: true
+    }).then(function (ok) {
+      if (!ok) return;
+      state.busy = true;
+      HttpApi.merchant.contentDelete({ type: state.type, id: itemId(item) }).then(function (res) {
+        state.busy = false;
+        if (Merchant.authExpired(res)) return;
+        if (res && res.code === 0) {
+          Merchant.toast('已删除');
+          Utils.track('merchant_content_delete', { type: state.type, id: itemId(item) });
+          loadList();
+        } else {
+          Merchant.toast((res && res.msg) || '删除失败');
+        }
+      }).catch(function () {
+        state.busy = false;
+        Merchant.toast('网络异常，请稍后重试');
+      });
+    });
+  }
+
+  function loadList() {
+    state.loading = true;
+    render();
+    return HttpApi.merchant.contentList({ type: state.type, pageIndex: 1, pageSize: 50 }).then(function (res) {
+      state.loading = false;
+      if (Merchant.authExpired(res)) return;
+      if (res && res.code === 0) {
+        state.list = res.rows || [];
+      } else {
+        state.list = [];
+        Merchant.toast((res && res.msg) || '加载内容失败');
+      }
+      render();
+    }).catch(function () {
+      state.loading = false;
+      state.list = [];
+      render();
+      Merchant.toast('网络异常，请稍后重试');
+    });
+  }
+
+  function switchType(type) {
+    if (state.type === type) return;
+    state.type = type;
+    state.list = [];
+    state.loading = true;
+    render();
+    loadList();
+  }
+
+  function bindEvents() {
+    Array.prototype.forEach.call(document.querySelectorAll('#mc-tabs .tab'), function (btn) {
+      btn.addEventListener('click', function () {
+        switchType(btn.getAttribute('data-type'));
+      });
+    });
+    $('mc-add').addEventListener('click', goCreate);
+    $('mc-empty-add').addEventListener('click', goCreate);
+    $('mc-list').addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      var row = btn.closest('.merchant-item');
+      if (!row) return;
+      var id = row.getAttribute('data-id');
+      var item = state.list.filter(function (x) { return String(itemId(x)) === String(id); })[0];
+      if (!item) return;
+      var action = btn.getAttribute('data-action');
+      if (action === 'edit') goEdit(item);
+      else if (action === 'share') share(item);
+      else if (action === 'delete') remove(item);
+    });
+  }
+
+  function init() {
+    if (!HttpApi) return;
+    var params = new URLSearchParams(window.location.search);
+    var type = params.get('type') || '';
+    if (TYPES.some(function (t) { return t.value === type; })) state.type = type;
+
+    Utils.track('merchant_content_visit', { type: state.type });
+    bindEvents();
+    render();
+    loadList();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();

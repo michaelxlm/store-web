@@ -1,0 +1,44 @@
+        <section class="page-heading">
+          <h1>同城找店</h1>
+          <p>按城市与品类筛选本地门店，查看地址、电话与营业信息，支持一键导航。</p>
+        </section>
+
+        <form class="search-inline" id="city-search" role="search">
+          <input class="input" type="search" id="city-keyword" placeholder="搜索店铺名称" aria-label="搜索店铺">
+          <button class="btn btn-primary" type="submit">搜索</button>
+        </form>
+
+        <div class="filter-bar">
+          <div class="filter-row">
+            <span class="filter-label">城市</span>
+            <div class="filter-options" id="city-cities">
+              <button type="button" class="chip is-active" data-city="">全部城市</button>
+            </div>
+          </div>
+          <div class="filter-row">
+            <span class="filter-label">品类</span>
+            <div class="filter-options" id="city-categories">
+              <button type="button" class="chip is-active" data-category="">全部品类</button>
+            </div>
+          </div>
+          <div class="filter-row">
+            <span class="filter-label">位置</span>
+            <div class="form-row">
+              <button type="button" class="btn btn-outline btn-sm" id="city-nearby">附近的店</button>
+              <span class="field-hint" id="city-nearby-hint">开启定位后按距离排序</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex-between">
+          <p class="text-muted">共 <strong id="city-total">0</strong> 家门店</p>
+          <a class="section-more" href="/merchant/login.html">我要入驻 →</a>
+        </div>
+
+        <div class="store-list" id="city-stores">
+          <div class="loading"><span class="spinner" aria-hidden="true"></span><span>加载门店…</span></div>
+        </div>
+
+        <div class="load-more">
+          <button type="button" class="btn btn-outline" id="city-more" hidden>加载更多</button>
+        </div>

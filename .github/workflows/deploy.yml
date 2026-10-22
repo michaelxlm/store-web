@@ -1,0 +1,45 @@
+# 静态站统一部署（push-to-deploy），由 39.107 上 self-hosted runner 执行
+# runner 用自身 /root/.ssh/id_rsa 登录 60.205.214.88，无需在仓库存密钥
+name: Deploy store.fangkelianmeng.com
+
+on:
+  push:
+    branches: [main]
+  # 允许从管理端（GitHub API workflow_dispatch）手动触发部署，无需重新 push
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, linux, x64, static-deploy]
+    steps:
+      - name: Configure SSH for GitHub checkout
+        shell: bash
+        run: |
+          # 用 runner 本地 /root/.ssh 私钥走 SSH 拉代码，规避 HTTPS(443) 超时
+          # 用 --system + 绝对路径：runner 环境 $HOME 未设置，--global 会报错且 checkout 读不到
+          git config --system url."git@github.com:".insteadOf "https://github.com/"
+          mkdir -p /root/.ssh && chmod 700 /root/.ssh
+          ssh-keyscan -t rsa,ecdsa,ed25519 github.com >> /root/.ssh/known_hosts 2>/dev/null
+      - uses: actions/checkout@v4
+      - name: Encoding gate (UTF-8 only)
+        shell: bash
+        run: |
+          # 八站统一编码门禁（静态网站字符编码规范）：非 UTF-8/带 BOM 即中断部署，防乱码上线
+          node scripts/check-encoding.js
+      - name: Build (prerender + fingerprint + link/sitemap gates)
+        shell: bash
+        run: |
+          # scripts/build.js 内含 minify → fingerprint → prerender → sitemap → llms → 根 404 → inject-scripts → check-links
+          NODE=/www/server/nodejs/v20.18.3/bin/node
+          [ -x "$NODE" ] || NODE=node
+          echo "[info] node: $NODE ($($NODE -v))"
+          $NODE scripts/build.js
+      - name: Sync to /www/wwwroot/store.fangkelianmeng.com
+        shell: bash
+        run: |
+          # 只发布静态产物：源码目录（data/scripts/templates）与包描述文件不上线
+          tar cf - --exclude=.git --exclude=.github --exclude=.user.ini --exclude=.workbuddy \
+            --exclude=data --exclude=scripts --exclude=templates --exclude=package.json \
+            --exclude=.editorconfig --exclude=.gitattributes --exclude=.gitignore . \
+            | ssh -i /root/.ssh/id_rsa -o StrictHostKeyChecking=accept-new root@60.205.214.88 \
+              "mkdir -p /www/wwwroot/store.fangkelianmeng.com ; cd /www/wwwroot/store.fangkelianmeng.com ; tar xmf -"

@@ -1,0 +1,20 @@
+        <section class="page-heading">
+          <h1>我的收藏</h1>
+          <p>收藏的车型、文章与视频保存在本机，随时回看。</p>
+        </section>
+
+        <div class="tabs" id="fav-tabs" role="tablist">
+          <button type="button" class="tab is-active" data-type="goods" role="tab" aria-selected="true">
+            车型<span class="tab-count" id="fav-count-goods" hidden></span>
+          </button>
+          <button type="button" class="tab" data-type="article" role="tab" aria-selected="false">
+            文章<span class="tab-count" id="fav-count-article" hidden></span>
+          </button>
+          <button type="button" class="tab" data-type="video" role="tab" aria-selected="false">
+            视频<span class="tab-count" id="fav-count-video" hidden></span>
+          </button>
+        </div>
+
+        <div class="favorite-list mt-16" id="fav-list">
+          <div class="loading"><span class="spinner" aria-hidden="true"></span><span>读取收藏…</span></div>
+        </div>

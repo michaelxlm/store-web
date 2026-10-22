@@ -1,0 +1,105 @@
+{
+  "site_name": "东北电动车汇",
+  "short_name": "本地商户推广平台",
+  "description": "东北电动车汇是本地商户综合推广平台，涵盖电动车型号浏览、车型对比、活动优惠与文章资讯，一站式满足选车购车需求。",
+  "url": "https://store.fangkelianmeng.com",
+  "api_base": "https://api.xuyiheng.com",
+  "oss_base": "https://antucao.oss-cn-beijing.aliyuncs.com",
+  "ad_site_key": "main-store",
+  "tracker_project": "main-store",
+  "logo": "/assets/img/logo.png",
+  "favicon": "/assets/img/favicon.svg",
+  "og_image": "https://store.fangkelianmeng.com/assets/img/share.jpg",
+  "author": "东北电动车汇",
+  "lang": "zh-CN",
+  "theme_color": "#4B5BF0",
+  "nav": [
+    { "label": "首页", "url": "/" },
+    { "label": "车型", "url": "/shop/shop.html" },
+    { "label": "活动", "url": "/event/list.html" },
+    { "label": "同城找店", "url": "/shop/city.html" },
+    { "label": "资讯", "url": "/article/article.html" },
+    { "label": "我的", "url": "/ucenter/ucenter.html" }
+  ],
+  "sidebar_categories": [
+    {
+      "label": "逛商城",
+      "items": [
+        { "label": "全部车型", "url": "/shop/shop.html" },
+        { "label": "车型对比", "url": "/shop/compare.html" },
+        { "label": "同城找店", "url": "/shop/city.html" },
+        { "label": "活动中心", "url": "/event/list.html" }
+      ]
+    },
+    {
+      "label": "看内容",
+      "items": [
+        { "label": "文章资讯", "url": "/article/article.html" },
+        { "label": "常见问题", "url": "/faq/faq.html" },
+        { "label": "媒体库", "url": "/media/index.html" }
+      ]
+    },
+    {
+      "label": "我的服务",
+      "items": [
+        { "label": "个人中心", "url": "/ucenter/ucenter.html" },
+        { "label": "我的收藏", "url": "/favorite/favorite.html" },
+        { "label": "设置", "url": "/settings/settings.html" },
+        { "label": "功能清单", "url": "/feature/index.html" }
+      ]
+    },
+    {
+      "label": "关于与商家",
+      "items": [
+        { "label": "关于我们", "url": "/about/wx.html" },
+        { "label": "隐私政策", "url": "/about/privacy.html" },
+        { "label": "商家中心", "url": "/merchant/login.html" }
+      ]
+    }
+  ],
+  "footer": {
+    "sections": [
+      {
+        "title": "选车看车",
+        "links": [
+          { "label": "全部车型", "url": "/shop/shop.html" },
+          { "label": "车型对比", "url": "/shop/compare.html" },
+          { "label": "同城找店", "url": "/shop/city.html" },
+          { "label": "活动中心", "url": "/event/list.html" }
+        ]
+      },
+      {
+        "title": "内容与帮助",
+        "links": [
+          { "label": "文章资讯", "url": "/article/article.html" },
+          { "label": "常见问题", "url": "/faq/faq.html" },
+          { "label": "功能清单", "url": "/feature/index.html" },
+          { "label": "媒体库", "url": "/media/index.html" }
+        ]
+      },
+      {
+        "title": "商家与关于",
+        "links": [
+          { "label": "商家入驻", "url": "/merchant/login.html" },
+          { "label": "商家中心", "url": "/merchant/index.html" },
+          { "label": "关于我们", "url": "/about/wx.html" },
+          { "label": "隐私政策", "url": "/about/privacy.html" }
+        ]
+      }
+    ],
+    "sister_sites": [
+      { "label": "一珩成长笔记 · xuyiheng.com", "url": "https://xuyiheng.com/" },
+      { "label": "明先生日常 · xuliming.com", "url": "https://xuliming.com/" },
+      { "label": "cs调色盘 · 2002cs.com", "url": "https://2002cs.com/" },
+      { "label": "访客小站 · fangkelianmeng.com", "url": "https://fangkelianmeng.com/" },
+      { "label": "小满美图 · img.fangkelianmeng.com", "url": "https://img.fangkelianmeng.com/" },
+      { "label": "小满手记 · zangeng.com", "url": "https://zangeng.com/" },
+      { "label": "实测手记 · 585.ink", "url": "https://585.ink/" },
+      { "label": "年表拾遗 · 20101115.com", "url": "https://20101115.com/" },
+      { "label": "小满券仓 · coupon.zangeng.com", "url": "https://coupon.zangeng.com/" }
+    ],
+    "copyright": "© 东北电动车汇",
+    "icp": "京ICP备18062653号-23",
+    "icp_url": "https://beian.miit.gov.cn/"
+  }
+}

@@ -1,0 +1,349 @@
+/* 商家登录 / 入驻（H5）：微信静默授权 + 账号密码 */
+(function () {
+  'use strict';
+
+  var Utils = window.Utils;
+  var HttpApi = window.HttpApi;
+  var WxH5 = window.WxH5;
+  var Merchant = window.Merchant;
+
+  var SERVICE_WX = 'younisuoxiang1';
+  var submitting = false;
+  var wxSubmitting = false;
+  var mode = 'login';
+  var qrTicket = '';
+  var qrExpireAt = 0;
+  var qrTimer = null;
+  var qrSubmitting = false;
+
+  function $(id) { return document.getElementById(id); }
+
+  function syncBusy() {
+    var loginBtn = $('ml-login-submit');
+    var regBtn = $('ml-reg-submit');
+    var wxBtn = $('ml-wx');
+    if (loginBtn) loginBtn.textContent = (submitting && mode === 'login') ? '登录中…' : '登 录';
+    if (regBtn) regBtn.textContent = (submitting && mode === 'register') ? '提交中…' : '提交入驻申请';
+    if (wxBtn) {
+      wxBtn.textContent = wxSubmitting ? '处理中…' : '微信一键登录 / 入驻';
+      wxBtn.disabled = wxSubmitting || submitting;
+    }
+    if (loginBtn) loginBtn.disabled = submitting;
+    if (regBtn) regBtn.disabled = submitting;
+  }
+
+  function goCenter() {
+    window.location.replace('/ucenter/ucenter.html');
+  }
+
+  function afterAuth(res, okText) {
+    if (res && res.code === 0 && res.data && res.data.token) {
+      Merchant.saveSession(res.data);
+      Merchant.toast(okText || res.msg || '登录成功');
+      setTimeout(goCenter, 400);
+      return true;
+    }
+    Merchant.toast((res && res.msg) || '操作失败，请稍后重试');
+    return false;
+  }
+
+  function switchMode(next) {
+    mode = next === 'register' ? 'register' : 'login';
+    var tabs = document.querySelectorAll('#ml-switch button');
+    Array.prototype.forEach.call(tabs, function (btn) {
+      btn.classList.toggle('is-active', btn.getAttribute('data-mode') === mode);
+    });
+    $('ml-login-form').hidden = mode !== 'login';
+    $('ml-reg-form').hidden = mode !== 'register';
+    syncBusy();
+  }
+
+  function submitLogin(e) {
+    e.preventDefault();
+    if (submitting) return;
+    var username = $('ml-username').value.trim();
+    var password = $('ml-password').value;
+    if (!username || !password) {
+      Merchant.toast('请填写账号和密码');
+      return;
+    }
+    submitting = true;
+    syncBusy();
+    HttpApi.merchant.login({ username: username, password: password }).then(function (res) {
+      submitting = false;
+      syncBusy();
+      afterAuth(res);
+    }).catch(function () {
+      submitting = false;
+      syncBusy();
+      Merchant.toast('网络异常，请稍后重试');
+    });
+  }
+
+  function submitRegister(e) {
+    e.preventDefault();
+    if (submitting) return;
+    var username = $('ml-reg-username').value.trim();
+    var password = $('ml-reg-password').value;
+    var storeName = $('ml-reg-store').value.trim();
+    var contactName = $('ml-reg-contact').value.trim();
+    var contactPhone = $('ml-reg-phone').value.trim();
+    if (!username || !password) {
+      Merchant.toast('请填写账号和密码');
+      return;
+    }
+    if (password.length < 8) {
+      Merchant.toast('密码不能少于 8 位');
+      return;
+    }
+    if (!storeName) {
+      Merchant.toast('请填写店铺名称');
+      return;
+    }
+    if (!contactName || !contactPhone) {
+      Merchant.toast('请填写联系人与电话');
+      return;
+    }
+    submitting = true;
+    syncBusy();
+    HttpApi.merchant.register({
+      username: username,
+      password: password,
+      storeName: storeName,
+      contactName: contactName,
+      contactPhone: contactPhone,
+      city: $('ml-reg-city').value.trim(),
+      category: $('ml-reg-category').value.trim()
+    }).then(function (res) {
+      submitting = false;
+      syncBusy();
+      afterAuth(res, '入驻申请已提交');
+    }).catch(function () {
+      submitting = false;
+      syncBusy();
+      Merchant.toast('网络异常，请稍后重试');
+    });
+  }
+
+  function startWxLogin() {
+    if (wxSubmitting || submitting) return;
+    if (!isWechat()) {
+      // PC 端走扫码：引导用户看二维码，不再发起必然失败的网页授权跳转
+      var qr = $('ml-qr');
+      if (qr) {
+        qr.hidden = false;
+        qr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      Merchant.toast('请用微信扫描上方二维码登录');
+      return;
+    }
+    wxSubmitting = true;
+    syncBusy();
+    WxH5.setMerchantAuthPending(true);
+    var jumped = WxH5.startSilentAuth();
+    if (!jumped) {
+      WxH5.setMerchantAuthPending(false);
+      wxSubmitting = false;
+      syncBusy();
+      Merchant.toast('请在微信中打开本页面使用微信登录');
+    }
+  }
+
+  /* ---------------------------- PC 扫码登录 ---------------------------- */
+  function isWechat() {
+    return !!(WxH5 && WxH5.isWechatBrowser && WxH5.isWechatBrowser());
+  }
+
+  function clearQrTimer() {
+    if (qrTimer) {
+      clearInterval(qrTimer);
+      qrTimer = null;
+    }
+  }
+
+  function setQrTip(text) {
+    var tip = $('ml-qr-tip');
+    if (tip) tip.textContent = text;
+  }
+
+  function showQrMask(text) {
+    var mask = $('ml-qr-mask');
+    var label = $('ml-qr-mask-text');
+    if (label) label.textContent = text;
+    if (mask) mask.hidden = false;
+  }
+
+  function hideQrMask() {
+    var mask = $('ml-qr-mask');
+    if (mask) mask.hidden = true;
+  }
+
+  function expireQr(text) {
+    clearQrTimer();
+    qrTicket = '';
+    showQrMask(text || '二维码已失效');
+    setQrTip('请点击刷新二维码后重新扫码');
+  }
+
+  /** 切换二维码图：失败时清空 src 并隐藏，避免 alt 文字透过遮罩显示 */
+  function setQrImage(url) {
+    var img = $('ml-qr-img');
+    if (!img) return;
+    if (url) {
+      img.src = url;
+      img.hidden = false;
+    } else {
+      img.removeAttribute('src');
+      img.hidden = true;
+    }
+  }
+
+  function finishQrLogin(wxTicket) {
+    if (qrSubmitting) return;
+    qrSubmitting = true;
+    HttpApi.merchant.wxLogin({ wxTicket: wxTicket }).then(function (res) {
+      qrSubmitting = false;
+      if (!afterAuth(res, '登录成功')) expireQr('登录失败，请刷新二维码重试');
+    }).catch(function () {
+      qrSubmitting = false;
+      expireQr('网络异常，请刷新二维码重试');
+      Merchant.toast('网络异常，请稍后重试');
+    });
+  }
+
+  function startQrPolling() {
+    clearQrTimer();
+    qrTimer = setInterval(function () {
+      if (!qrTicket) {
+        clearQrTimer();
+        return;
+      }
+      if (Date.now() > qrExpireAt) {
+        expireQr('二维码已过期');
+        return;
+      }
+      HttpApi.wechat.qrLoginStatus(qrTicket).then(function (res) {
+        var data = res && res.data;
+        if (!data) return;
+        if (data.status === 'confirmed' && data.wxTicket) {
+          clearQrTimer();
+          qrTicket = '';
+          hideQrMask();
+          setQrTip('扫码成功，正在登录…');
+          finishQrLogin(data.wxTicket);
+        } else if (data.status === 'expired') {
+          expireQr('二维码已过期');
+        }
+      }).catch(function () {
+        /* 单次轮询失败不终止，网络抖动下继续下一轮 */
+      });
+    }, 2000);
+  }
+
+  function loadQr() {
+    if (isWechat()) return;
+    clearQrTimer();
+    qrTicket = '';
+    hideQrMask();
+    setQrImage('');
+    setQrTip('正在生成登录二维码…');
+    HttpApi.wechat.qrLoginCreate({}).then(function (res) {
+      var data = res && res.data;
+      if (!res || res.code !== 0 || !data || !data.ticket || !data.qrcodeUrl) {
+        // 内部接口错误不直接展示给商家，仅控制台留痕
+        if (window.console) console.warn('[merchant-login] 生成登录二维码失败:', (res && res.msg) || 'empty response');
+        expireQr('二维码生成失败');
+        return;
+      }
+      qrTicket = data.ticket;
+      var ttl = Number(data.expireSeconds) || 300;
+      qrExpireAt = Date.now() + ttl * 1000;
+      setQrImage(data.qrcodeUrl);
+      setQrTip('请用微信「扫一扫」登录，' + Math.max(1, Math.round(ttl / 60)) + ' 分钟内有效');
+      startQrPolling();
+    }).catch(function (err) {
+      if (window.console) console.warn('[merchant-login] 生成登录二维码异常:', err && err.message);
+      expireQr('二维码生成失败');
+    });
+  }
+
+  function bindForgot() {
+    var modal = $('ml-forgot-modal');
+    function open() { modal.classList.add('is-open'); }
+    function close() { modal.classList.remove('is-open'); }
+    $('ml-forgot').addEventListener('click', open);
+    $('ml-forgot-close').addEventListener('click', close);
+    modal.addEventListener('click', function (e) {
+      if (e.target === modal) close();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') close();
+    });
+    $('ml-service').addEventListener('click', function () {
+      Utils.copyText(SERVICE_WX);
+      Utils.track('contact_copy', { from: 'merchant_login' });
+    });
+    $('ml-forgot-wx').addEventListener('click', function () {
+      close();
+      startWxLogin();
+    });
+  }
+
+  function consumeTicket() {
+    var ticket = WxH5.consumeMerchantTicket();
+    if (!ticket) {
+      WxH5.setMerchantAuthPending(false);
+      if (HttpApi.session.isLogged()) goCenter();
+      return;
+    }
+    WxH5.setMerchantAuthPending(false);
+    if (HttpApi.session.isLogged()) {
+      goCenter();
+      return;
+    }
+    wxSubmitting = true;
+    syncBusy();
+    HttpApi.merchant.wxLogin({ wxTicket: ticket }).then(function (res) {
+      wxSubmitting = false;
+      syncBusy();
+      afterAuth(res, '登录成功');
+    }).catch(function () {
+      wxSubmitting = false;
+      syncBusy();
+      Merchant.toast('网络异常，请稍后重试');
+    });
+  }
+
+  function init() {
+    if (!Merchant || !WxH5) return;
+    Utils.track('merchant_login_visit', {});
+    $('ml-login-form').addEventListener('submit', submitLogin);
+    $('ml-reg-form').addEventListener('submit', submitRegister);
+    Array.prototype.forEach.call(document.querySelectorAll('#ml-switch button'), function (btn) {
+      btn.addEventListener('click', function () {
+        switchMode(btn.getAttribute('data-mode'));
+      });
+    });
+    bindForgot();
+    if (isWechat()) {
+      // 微信内：保留一键静默授权，不展示扫码面板
+      $('ml-qr').hidden = true;
+      $('ml-wx').addEventListener('click', startWxLogin);
+    } else {
+      // PC：隐藏无法完成的网页授权按钮，改为公众号扫码登录
+      $('ml-wx').hidden = true;
+      $('ml-wx-tip').hidden = true;
+      $('ml-qr').hidden = false;
+      $('ml-qr-refresh').addEventListener('click', loadQr);
+      loadQr();
+    }
+    consumeTicket();
+    syncBusy();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();

@@ -1,0 +1,56 @@
+        <section class="page-heading">
+          <h1>设置</h1>
+          <p>管理本地缓存、收藏与帮助入口。</p>
+        </section>
+
+        <section class="section">
+          <h2 class="section-title">通用设置</h2>
+          <div class="card mt-8">
+            <div class="menu-list">
+              <button type="button" class="menu-item menu-item-button" id="settings-clear">
+                <span class="menu-item-main">
+                  <span>清理缓存</span>
+                  <span class="field-hint" id="settings-size">统计中…</span>
+                </span>
+                <span class="arrow">›</span>
+              </button>
+              <a class="menu-item" href="/favorite/favorite.html">
+                <span>我的收藏</span><span class="arrow">›</span>
+              </a>
+              <a class="menu-item" href="/shop/compare.html">
+                <span>车型对比清单</span><span class="arrow">›</span>
+              </a>
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <h2 class="section-title">帮助与反馈</h2>
+          <div class="card mt-8">
+            <div class="menu-list">
+              <a class="menu-item" href="/faq/faq.html">
+                <span>常见问题</span><span class="arrow">›</span>
+              </a>
+              <a class="menu-item" href="/feature/index.html">
+                <span>功能清单</span><span class="arrow">›</span>
+              </a>
+              <a class="menu-item" href="/about/wx.html">
+                <span>关于我们</span><span class="arrow">›</span>
+              </a>
+              <a class="menu-item" href="/about/privacy.html">
+                <span>隐私政策</span><span class="arrow">›</span>
+              </a>
+            </div>
+          </div>
+        </section>
+
+        <div class="modal-mask" id="settings-modal">
+          <div class="modal" role="dialog" aria-modal="true" aria-labelledby="settings-modal-title">
+            <h3 id="settings-modal-title">清理缓存</h3>
+            <p class="text-muted">将清除本机保存的收藏、搜索历史、对比清单、浏览偏好与商家登录状态，确定继续吗？</p>
+            <div class="modal-actions">
+              <button type="button" class="btn btn-ghost" id="settings-cancel">取消</button>
+              <button type="button" class="btn btn-danger" id="settings-confirm">清理</button>
+            </div>
+          </div>
+        </div>

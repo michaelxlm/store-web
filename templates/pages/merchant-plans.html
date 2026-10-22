@@ -1,0 +1,65 @@
+        <section class="page-heading">
+          <h1>套餐与续费</h1>
+          <p>基础年费开通「同城找店」公域展示资格</p>
+        </section>
+
+        <div class="merchant-shell">
+          <nav class="merchant-nav" aria-label="商家中心导航">
+            <a href="/merchant/index.html">商家中心</a>
+            <a href="/merchant/stores.html">我的店铺</a>
+            <a href="/merchant/plans.html" class="active" aria-current="page">套餐与续费</a>
+            <a href="/merchant/content.html">内容营销</a>
+            <a href="/shop/city.html">同城找店</a>
+            <a href="/shop/shop.html">返回前台</a>
+          </nav>
+
+          <div class="merchant-main">
+            <div class="merchant-plan-current is-off" id="mp-current">
+              <strong>公域展示未开通</strong>
+              <span>选购下方基础年费套餐，开通「同城找店」公域展示资格</span>
+            </div>
+
+            <div class="merchant-card">
+              <div class="merchant-card-head">
+                <div>
+                  <h2>基础年费套餐</h2>
+                  <p>续费将从现有到期时间顺延，不亏天数</p>
+                </div>
+              </div>
+              <div class="merchant-plan-list" id="mp-plans">
+                <div class="loading"><span class="spinner" aria-hidden="true"></span><span>加载套餐…</span></div>
+              </div>
+              <div class="empty" id="mp-empty" hidden>
+                <strong>暂无在售套餐</strong>
+                <span>请联系平台客服了解开通方式</span>
+              </div>
+            </div>
+
+            <div class="merchant-card" id="mp-subs-card" hidden>
+              <div class="merchant-card-head">
+                <div>
+                  <h2>我的订阅记录</h2>
+                  <p>待支付订单确认收款后自动开通</p>
+                </div>
+              </div>
+              <div class="merchant-sub-list" id="mp-subs"></div>
+            </div>
+
+            <div class="merchant-pay-note">基础年费买断的是「公域展示资格」；如需推广服务请联系平台运营。</div>
+          </div>
+        </div>
+
+        <div class="modal-mask" id="mp-pay-modal" role="dialog" aria-modal="true" aria-labelledby="mp-pay-title">
+          <div class="modal">
+            <h3 id="mp-pay-title">订单已创建</h3>
+            <div class="merchant-modal-text">
+              <p class="merchant-plan-price" id="mp-pay-amount"></p>
+              <p id="mp-pay-hint"></p>
+              <div class="merchant-order" id="mp-pay-order"></div>
+              <p class="merchant-pay-note">平台确认收款后即为你开通公域展示，可稍后回到本页查看状态。</p>
+            </div>
+            <div class="modal-actions">
+              <button class="btn btn-primary" type="button" id="mp-pay-close">我知道了</button>
+            </div>
+          </div>
+        </div>

@@ -1,0 +1,21 @@
+/* 功能清单：客服电话入口埋点 */
+(function () {
+  'use strict';
+
+  var Utils = window.Utils;
+
+  function init() {
+    var call = document.getElementById('feature-call');
+    if (call) {
+      call.addEventListener('click', function () {
+        Utils.track('contact_service', { feature: 'feature_catalog', from: 'feature' });
+      });
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();

@@ -1,0 +1,24 @@
+        <section class="page-heading">
+          <h1>文章资讯</h1>
+          <p>电动车行业资讯、选购指南、使用技巧与保养知识。</p>
+        </section>
+
+        <form class="search-inline" id="article-search" role="search">
+          <input class="input" type="search" id="article-keyword" placeholder="搜索文章标题" aria-label="搜索文章">
+          <button class="btn btn-primary" type="submit">搜索</button>
+        </form>
+
+        <div class="tabs" id="article-tabs" role="tablist">
+          <button type="button" class="tab is-active" data-category="all" role="tab" aria-selected="true">全部</button>
+          <button type="button" class="tab" data-category="purchase" role="tab" aria-selected="false">选车指南</button>
+          <button type="button" class="tab" data-category="maintenance" role="tab" aria-selected="false">使用维护</button>
+          <button type="button" class="tab" data-category="policy" role="tab" aria-selected="false">政策法规</button>
+        </div>
+
+        <div class="article-list" id="article-list">
+          <div class="loading"><span class="spinner" aria-hidden="true"></span><span>加载资讯…</span></div>
+        </div>
+
+        <div class="load-more">
+          <button type="button" class="btn btn-outline" id="article-more" hidden>加载更多</button>
+        </div>

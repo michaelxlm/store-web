@@ -1,0 +1,1 @@
+.menu-item-button{width:100%;border:0;border-bottom:1px solid var(--line);background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer}.menu-item-button:last-child{border-bottom:0}.menu-item-button:hover{color:var(--primary)}.menu-item-main{display:flex;flex-direction:column;gap:3px}.menu-item-main .field-hint{font-weight:400}

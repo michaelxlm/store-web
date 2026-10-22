@@ -1,0 +1,22 @@
+{
+  "name": "store-web",
+  "version": "1.0.0",
+  "private": true,
+  "description": "东北电动车汇 · 纯静态商城站（零运行时依赖）。main-store Web 承载平移（WO-130）。",
+  "scripts": {
+    "dev": "node scripts/serve.js",
+    "build": "node scripts/build.js",
+    "prerender": "node scripts/prerender.js",
+    "inject": "node scripts/inject-scripts.js",
+    "minify": "node scripts/minify.js",
+    "fingerprint": "node scripts/fingerprint.js",
+    "sitemap": "node scripts/build-sitemap.js",
+    "llms": "node scripts/build-llms.js",
+    "check": "node scripts/check-links.js",
+    "check:encoding": "node scripts/check-encoding.js",
+    "deploy": "npm run build && npm run check"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

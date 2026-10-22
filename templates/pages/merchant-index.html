@@ -1,0 +1,145 @@
+        <section class="page-heading">
+          <h1>商家中心</h1>
+          <p>店铺管理 · 套餐续费 · 内容营销</p>
+        </section>
+
+        <div class="merchant-shell">
+          <nav class="merchant-nav" aria-label="商家中心导航">
+            <a href="/merchant/index.html" class="active" aria-current="page">商家中心</a>
+            <a href="/merchant/stores.html">我的店铺</a>
+            <a href="/merchant/plans.html">套餐与续费</a>
+            <a href="/merchant/content.html">内容营销</a>
+            <a href="/shop/city.html">同城找店</a>
+            <a href="/shop/shop.html">返回前台</a>
+          </nav>
+
+          <div class="merchant-main">
+            <div class="merchant-card merchant-profile">
+              <div class="merchant-avatar" id="mi-avatar">商</div>
+              <div class="merchant-profile-main">
+                <div class="merchant-name-row">
+                  <strong class="merchant-name" id="mi-name">商家</strong>
+                  <span class="merchant-badge" id="mi-badge">加载中</span>
+                </div>
+                <div class="merchant-meta" id="mi-meta"></div>
+              </div>
+            </div>
+
+            <div class="merchant-card" id="mi-profile-card" hidden>
+              <div class="merchant-card-head">
+                <div>
+                  <h2 id="mi-profile-title">完善入驻资料</h2>
+                  <p id="mi-profile-sub">补充店铺与联系信息后即可创建店铺、开通公域展示</p>
+                </div>
+              </div>
+              <form class="merchant-form" id="mi-profile-form" novalidate>
+                <label class="field">
+                  <span class="field-label">店铺名称</span>
+                  <input class="input" type="text" id="mi-store-name" placeholder="如：xx车行 / xx旗舰店" maxlength="40">
+                </label>
+                <div class="form-grid">
+                  <label class="field">
+                    <span class="field-label">联系人</span>
+                    <input class="input" type="text" id="mi-contact-name" placeholder="姓名" maxlength="20">
+                  </label>
+                  <label class="field">
+                    <span class="field-label">联系电话</span>
+                    <input class="input" type="tel" id="mi-contact-phone" placeholder="手机号" maxlength="20">
+                  </label>
+                  <label class="field">
+                    <span class="field-label">所在城市</span>
+                    <input class="input" type="text" id="mi-city" placeholder="如：长春" maxlength="20">
+                  </label>
+                  <label class="field">
+                    <span class="field-label">主营品类</span>
+                    <input class="input" type="text" id="mi-category" placeholder="如：电动车" maxlength="20">
+                  </label>
+                </div>
+                <div class="form-actions">
+                  <button class="btn btn-primary" type="submit" id="mi-profile-submit">保存并继续</button>
+                  <button class="btn" type="button" id="mi-profile-cancel" hidden>取消</button>
+                </div>
+              </form>
+            </div>
+
+            <div id="mi-banner"></div>
+
+            <div class="merchant-card">
+              <div class="menu-list merchant-cells">
+                <a class="menu-item" href="/merchant/stores.html">
+                  <span class="merchant-cell-icon" aria-hidden="true">🏪</span>
+                  <span class="merchant-cell-body">
+                    <span class="merchant-cell-title">我的店铺</span>
+                    <span class="merchant-cell-sub">创建 / 编辑店铺资料，管理展示状态</span>
+                  </span>
+                  <span class="merchant-arrow" aria-hidden="true">›</span>
+                </a>
+                <a class="menu-item" href="/merchant/plans.html">
+                  <span class="merchant-cell-icon" aria-hidden="true">📦</span>
+                  <span class="merchant-cell-body">
+                    <span class="merchant-cell-title">套餐与续费</span>
+                    <span class="merchant-cell-sub">基础年费开通公域展示，查看订阅与到期时间</span>
+                  </span>
+                  <span class="merchant-arrow" aria-hidden="true">›</span>
+                </a>
+                <a class="menu-item" href="/merchant/content.html">
+                  <span class="merchant-cell-icon" aria-hidden="true">📣</span>
+                  <span class="merchant-cell-body">
+                    <span class="merchant-cell-title">内容营销</span>
+                    <span class="merchant-cell-sub">发布文章 / 问答 / 视频，关联商品与店铺引流</span>
+                  </span>
+                  <span class="merchant-arrow" aria-hidden="true">›</span>
+                </a>
+                <button class="menu-item" type="button" id="mi-edit-profile">
+                  <span class="merchant-cell-icon" aria-hidden="true">📝</span>
+                  <span class="merchant-cell-body">
+                    <span class="merchant-cell-title">编辑入驻资料</span>
+                    <span class="merchant-cell-sub">随时更新店铺名称、联系人与城市品类</span>
+                  </span>
+                  <span class="merchant-arrow" aria-hidden="true">›</span>
+                </button>
+                <a class="menu-item" href="/shop/city.html">
+                  <span class="merchant-cell-icon" aria-hidden="true">🔍</span>
+                  <span class="merchant-cell-body">
+                    <span class="merchant-cell-title">同城找店（效果预览）</span>
+                    <span class="merchant-cell-sub">看看顾客端的店铺展示频道</span>
+                  </span>
+                  <span class="merchant-arrow" aria-hidden="true">›</span>
+                </a>
+              </div>
+            </div>
+
+            <div class="merchant-card">
+              <div class="menu-list merchant-cells">
+                <div class="menu-item">
+                  <span class="merchant-cell-icon" aria-hidden="true">🟢</span>
+                  <span class="merchant-cell-body">
+                    <span class="merchant-cell-title">公众号登录（微信内网页）</span>
+                    <span class="merchant-cell-sub" id="mi-wx-sub">未绑定</span>
+                  </span>
+                  <button class="btn btn-primary btn-sm" type="button" id="mi-wx-action">绑定</button>
+                </div>
+                <div class="menu-item">
+                  <span class="merchant-cell-icon" aria-hidden="true">🔵</span>
+                  <span class="merchant-cell-body">
+                    <span class="merchant-cell-title">小程序登录</span>
+                    <span class="merchant-cell-sub" id="mi-mp-sub">未绑定</span>
+                  </span>
+                  <span class="merchant-badge" id="mi-mp-hint">小程序内绑定</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="merchant-card">
+              <div class="menu-list merchant-cells">
+                <div class="menu-item">
+                  <span class="merchant-cell-body">
+                    <span class="merchant-cell-title" id="mi-contact">联系人：-</span>
+                    <span class="merchant-cell-sub">如需变更可点击上方「编辑入驻资料」随时更新</span>
+                  </span>
+                </div>
+              </div>
+              <button class="merchant-logout" type="button" id="mi-logout">退出登录</button>
+            </div>
+          </div>
+        </div>

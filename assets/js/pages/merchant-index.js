@@ -1,0 +1,332 @@
+/* 商家中心工作台：资料卡 / 入驻资料 / 微信绑定 / 退出 */
+(function () {
+  'use strict';
+
+  var Utils = window.Utils;
+  var HttpApi = window.HttpApi;
+  var WxH5 = window.WxH5;
+  var Merchant = window.Merchant;
+
+  if (!Merchant) return;
+  if (!Merchant.requireLogin()) return;
+
+  var state = {
+    merchant: Merchant.profile() || {},
+    current: null,
+    showProfileForm: false,
+    saving: false,
+    binding: false
+  };
+
+  function $(id) { return document.getElementById(id); }
+
+  function esc(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function goLogin() {
+    window.location.replace('/merchant/login.html');
+  }
+
+  function renderProfile() {
+    var m = state.merchant || {};
+    var name = m.storeName || m.username || '未命名商家';
+    $('mi-avatar').textContent = String(name).charAt(0) || '商';
+    $('mi-name').textContent = name;
+
+    var badge = $('mi-badge');
+    badge.className = 'merchant-badge merchant-badge--' + (m.status || 'pending');
+    badge.textContent = Merchant.statusText(m.status);
+
+    var meta = [];
+    if (m.username) meta.push('账号 ' + m.username);
+    if (m.city) meta.push(m.city);
+    if (m.category) meta.push(m.category);
+    $('mi-meta').innerHTML = meta.map(function (text) {
+      return '<span>' + esc(text) + '</span>';
+    }).join('');
+
+    $('mi-contact').textContent = '联系人：' + (m.contactName || '-') + (m.contactPhone ? ' ' + m.contactPhone : '');
+
+    var wxSub = $('mi-wx-sub');
+    var wxBtn = $('mi-wx-action');
+    if (m.wxBound) {
+      wxSub.textContent = '已绑定，微信内可一键登录';
+      wxBtn.textContent = '解绑';
+      wxBtn.className = 'btn btn-danger btn-sm';
+    } else {
+      wxSub.textContent = '未绑定';
+      wxBtn.textContent = '绑定';
+      wxBtn.className = 'btn btn-primary btn-sm';
+    }
+    wxBtn.disabled = false;
+
+    var mpSub = $('mi-mp-sub');
+    var mpHint = $('mi-mp-hint');
+    if (m.mpBound) {
+      mpSub.textContent = '已绑定，小程序可一键登录';
+      mpHint.hidden = true;
+    } else {
+      mpSub.textContent = '未绑定';
+      mpHint.hidden = false;
+    }
+  }
+
+  function fillForm() {
+    var m = state.merchant || {};
+    $('mi-store-name').value = m.storeName || '';
+    $('mi-contact-name').value = m.contactName || '';
+    $('mi-contact-phone').value = m.contactPhone || '';
+    $('mi-city').value = m.city || '';
+    $('mi-category').value = m.category || '';
+  }
+
+  function syncProfileCard() {
+    var m = state.merchant || {};
+    var card = $('mi-profile-card');
+    var visible = !m.profileComplete || state.showProfileForm;
+    card.hidden = !visible;
+    if (!visible) return;
+
+    var editing = !!m.profileComplete;
+    $('mi-profile-title').textContent = editing ? '✏️ 编辑入驻资料' : '📝 完善入驻资料';
+    $('mi-profile-sub').textContent = editing
+      ? '修改后保存即更新入驻信息（非空字段会覆盖旧值）'
+      : '补充店铺与联系信息后即可创建店铺、开通公域展示';
+    $('mi-profile-submit').textContent = state.saving ? '提交中…' : (editing ? '保存修改' : '保存并继续');
+    $('mi-profile-submit').disabled = state.saving;
+    $('mi-profile-cancel').hidden = !editing;
+  }
+
+  function renderBanner() {
+    var m = state.merchant || {};
+    var box = $('mi-banner');
+    var expireText = state.current && state.current.expireAt ? Merchant.fmtDate(state.current.expireAt) : '';
+    var cls = '';
+    var text = '';
+
+    if (m.status === 'pending') {
+      cls = 'warn';
+      text = '⏳ 入驻资料审核中，通过后即可创建店铺并开通公域展示（一般 1 个工作日内）';
+    } else if (m.status === 'rejected') {
+      cls = 'danger';
+      text = '❌ 审核未通过' + (m.rejectReason ? '：' + m.rejectReason : '') + '。请完善资料后重新提交，如有疑问请联系平台客服';
+    } else if (m.status === 'disabled') {
+      cls = 'danger';
+      text = '🚫 账号已被禁用，请联系平台客服了解原因';
+    } else if (expireText) {
+      cls = 'ok';
+      text = '✅ 公域展示服务生效中，到期时间 ' + expireText + '（到期自动下线，续费即恢复）';
+    } else if (m.status === 'approved') {
+      cls = 'info';
+      text = '💡 账号已开通。选购基础年费套餐即可让店铺进入「同城找店」公域展示';
+    }
+
+    if (!text) {
+      box.innerHTML = '';
+      return;
+    }
+    box.innerHTML = '<div class="merchant-banner merchant-banner--' + cls + '">' + esc(text) + '</div>';
+  }
+
+  function loadInfo() {
+    return HttpApi.merchant.info().then(function (res) {
+      if (Merchant.authExpired(res)) return;
+      if (res && res.code === 0 && res.data && res.data.merchant) {
+        state.merchant = res.data.merchant;
+        HttpApi.session.updateProfile(state.merchant);
+        fillForm();
+        renderProfile();
+        syncProfileCard();
+        renderBanner();
+      } else if (res && res.code !== 0) {
+        Merchant.toast(res.msg || '获取商家信息失败');
+      }
+    }).catch(function () { /* 首屏已有本地资料，静默降级 */ });
+  }
+
+  function loadSubscription() {
+    return HttpApi.merchant.subscriptionList().then(function (res) {
+      if (Merchant.authExpired(res)) return;
+      if (res && res.code === 0 && res.data) {
+        state.current = res.data.current || null;
+        renderBanner();
+      }
+    }).catch(function () { /* 非阻断：横幅降级为不展示到期时间 */ });
+  }
+
+  function saveProfile(e) {
+    e.preventDefault();
+    if (state.saving) return;
+    var storeName = $('mi-store-name').value.trim();
+    var contactName = $('mi-contact-name').value.trim();
+    var contactPhone = $('mi-contact-phone').value.trim();
+    if (!storeName) {
+      Merchant.toast('请填写店铺名称');
+      return;
+    }
+    if (!contactName || !contactPhone) {
+      Merchant.toast('请填写联系人与电话');
+      return;
+    }
+
+    state.saving = true;
+    syncProfileCard();
+    HttpApi.merchant.completeProfile({
+      storeName: storeName,
+      contactName: contactName,
+      contactPhone: contactPhone,
+      city: $('mi-city').value.trim(),
+      category: $('mi-category').value.trim()
+    }).then(function (res) {
+      state.saving = false;
+      if (Merchant.authExpired(res)) return;
+      if (res && res.code === 0 && res.data && res.data.merchant) {
+        state.merchant = res.data.merchant;
+        HttpApi.session.updateProfile(state.merchant);
+        state.showProfileForm = false;
+        fillForm();
+        renderProfile();
+        syncProfileCard();
+        renderBanner();
+        Merchant.toast('资料已保存');
+        Utils.track('merchant_profile_save', {});
+      } else {
+        syncProfileCard();
+        Merchant.toast((res && res.msg) || '保存失败');
+      }
+    }).catch(function () {
+      state.saving = false;
+      syncProfileCard();
+      Merchant.toast('网络异常，请稍后重试');
+    });
+  }
+
+  function bindWx() {
+    if (state.binding) return;
+    if (!WxH5.isWechatBrowser()) {
+      Merchant.toast('请在微信中打开本页面使用微信绑定');
+      return;
+    }
+    state.binding = true;
+    var btn = $('mi-wx-action');
+    btn.disabled = true;
+    btn.textContent = '处理中…';
+    WxH5.setMerchantAuthPending(true);
+    var jumped = WxH5.startSilentAuth();
+    if (!jumped) {
+      WxH5.setMerchantAuthPending(false);
+      state.binding = false;
+      btn.disabled = false;
+      renderProfile();
+      Merchant.toast('请在微信中打开本页面使用微信绑定');
+    }
+  }
+
+  function unbind(scope) {
+    if (state.binding) return;
+    var label = scope === 'wx' ? '公众号' : '小程序';
+    Merchant.confirm('确定解绑' + label + '登录吗？解绑后该微信将无法一键登录本商家账号。', {
+      title: '解绑确认',
+      okText: '解绑',
+      danger: true
+    }).then(function (ok) {
+      if (!ok) return;
+      state.binding = true;
+      $('mi-wx-action').disabled = true;
+      HttpApi.merchant.unbindSelf({ scope: scope }).then(function (res) {
+        state.binding = false;
+        if (Merchant.authExpired(res)) return;
+        if (res && res.code === 0 && res.data && res.data.merchant) {
+          state.merchant = res.data.merchant;
+          HttpApi.session.updateProfile(state.merchant);
+          renderProfile();
+          Merchant.toast('已解绑');
+          Utils.track('merchant_unbind', { scope: scope });
+        } else {
+          renderProfile();
+          Merchant.toast((res && res.msg) || '解绑失败');
+        }
+      }).catch(function () {
+        state.binding = false;
+        renderProfile();
+        Merchant.toast('网络异常，请稍后重试');
+      });
+    });
+  }
+
+  function consumeBindTicket() {
+    var ticket = WxH5.consumeMerchantTicket();
+    if (!ticket) {
+      WxH5.setMerchantAuthPending(false);
+      return;
+    }
+    WxH5.setMerchantAuthPending(false);
+    var btn = $('mi-wx-action');
+    btn.disabled = true;
+    btn.textContent = '处理中…';
+    HttpApi.merchant.bindSelfWx({ wxTicket: ticket }).then(function (res) {
+      if (Merchant.authExpired(res)) return;
+      if (res && res.code === 0 && res.data && res.data.merchant) {
+        state.merchant = res.data.merchant;
+        HttpApi.session.updateProfile(state.merchant);
+        renderProfile();
+        Merchant.toast('绑定成功');
+      } else {
+        renderProfile();
+        Merchant.toast((res && res.msg) || '绑定失败');
+      }
+    }).catch(function () {
+      renderProfile();
+      Merchant.toast('网络异常，请稍后重试');
+    });
+  }
+
+  function logout() {
+    Merchant.confirm('确定退出商家中心吗？', { title: '退出登录', okText: '退出', danger: true }).then(function (ok) {
+      if (!ok) return;
+      HttpApi.session.clear();
+      Merchant.toast('已退出');
+      setTimeout(goLogin, 300);
+    });
+  }
+
+  function init() {
+    if (!HttpApi || !WxH5) return;
+    Utils.track('merchant_center_visit', { status: state.merchant.status || '' });
+
+    fillForm();
+    renderProfile();
+    syncProfileCard();
+    renderBanner();
+
+    $('mi-profile-form').addEventListener('submit', saveProfile);
+    $('mi-profile-cancel').addEventListener('click', function () {
+      state.showProfileForm = false;
+      syncProfileCard();
+    });
+    $('mi-edit-profile').addEventListener('click', function () {
+      state.showProfileForm = true;
+      syncProfileCard();
+      fillForm();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    $('mi-wx-action').addEventListener('click', function () {
+      if (state.merchant && state.merchant.wxBound) unbind('wx');
+      else bindWx();
+    });
+    $('mi-logout').addEventListener('click', logout);
+
+    consumeBindTicket();
+    loadInfo();
+    loadSubscription();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();

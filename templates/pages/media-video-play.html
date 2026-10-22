@@ -1,0 +1,19 @@
+        <div class="video-stage" id="video-stage">
+          <video id="video-player" controls autoplay playsinline preload="metadata"></video>
+          <div class="video-stage-empty" id="video-error" hidden>
+            <strong>视频加载失败</strong>
+            <p class="text-muted">链接可能已失效，或当前网络无法播放。</p>
+            <button type="button" class="btn btn-outline btn-sm" id="video-retry">点击重试</button>
+          </div>
+        </div>
+
+        <section class="section" id="video-info" hidden>
+          <h2 class="section-title" id="video-title"></h2>
+          <p class="text-muted mt-8" id="video-desc"></p>
+        </section>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-outline btn-sm" id="video-copy">复制链接</button>
+          <a class="btn btn-outline btn-sm" id="video-source" target="_blank" rel="noopener noreferrer" hidden>新窗口打开</a>
+          <a class="btn btn-ghost btn-sm" href="/media/index.html">返回媒体库</a>
+        </div>

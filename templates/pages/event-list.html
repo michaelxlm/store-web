@@ -1,0 +1,15 @@
+        <section class="page-heading">
+          <h1>活动中心</h1>
+          <p>门店优惠、线下活动与促销资讯，按状态快速筛选。</p>
+        </section>
+
+        <div class="tabs" id="event-tabs" role="tablist">
+          <button type="button" class="tab is-active" data-status="all" role="tab" aria-selected="true">全部</button>
+          <button type="button" class="tab" data-status="ongoing" role="tab" aria-selected="false">进行中</button>
+          <button type="button" class="tab" data-status="upcoming" role="tab" aria-selected="false">即将开始</button>
+          <button type="button" class="tab" data-status="ended" role="tab" aria-selected="false">已结束</button>
+        </div>
+
+        <div class="event-list" id="event-list">
+          <div class="loading"><span class="spinner" aria-hidden="true"></span><span>加载活动…</span></div>
+        </div>

@@ -1,0 +1,43 @@
+        <section class="page-heading">
+          <h1>搜索</h1>
+          <p>搜索电动车型号、品牌与门店，快速找到心仪座驾。</p>
+        </section>
+
+        <form class="search-inline" id="search-form" role="search">
+          <input class="input" type="search" id="search-input" placeholder="搜索电动车型号、品牌…" aria-label="搜索关键词" autocomplete="off" enterkeyhint="search">
+          <button class="btn btn-primary" type="submit">搜索</button>
+          <button class="btn btn-ghost" type="button" id="search-reset" hidden>清空</button>
+        </form>
+
+        <section class="section" id="search-hot-wrap" hidden>
+          <div class="section-head">
+            <h2 class="section-title">热门搜索</h2>
+          </div>
+          <div class="chips" id="search-hot"></div>
+        </section>
+
+        <section class="section" id="search-history-wrap" hidden>
+          <div class="section-head">
+            <h2 class="section-title">搜索历史</h2>
+            <button type="button" class="btn btn-ghost btn-sm" id="search-history-clear">清除</button>
+          </div>
+          <div class="chips" id="search-history"></div>
+        </section>
+
+        <section class="section" id="search-results" hidden>
+          <div class="section-head">
+            <h2 class="section-title">搜索结果 <span class="count" id="search-count"></span></h2>
+          </div>
+          <div class="sort-bar" id="search-sort" role="group" aria-label="排序方式">
+            <button type="button" class="is-active" data-sort="default">综合排序</button>
+            <button type="button" data-sort="sales">销量优先</button>
+            <button type="button" data-sort="price_asc">价格从低到高</button>
+            <button type="button" data-sort="price_desc">价格从高到低</button>
+          </div>
+          <div class="goods-grid mt-16" id="search-grid"></div>
+          <div class="load-more">
+            <button type="button" class="btn btn-outline" id="search-more" hidden>加载更多</button>
+          </div>
+        </section>
+
+        <div id="search-empty" hidden></div>

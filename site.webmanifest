@@ -1,0 +1,26 @@
+{
+  "name": "东北电动车汇 - 本地商户综合推广平台",
+  "short_name": "东北电动车汇",
+  "description": "电动车型号浏览、车型对比、同城找店、活动优惠与文章资讯。",
+  "lang": "zh-CN",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F7F8FA",
+  "theme_color": "#4B5BF0",
+  "icons": [
+    {
+      "src": "/assets/img/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/img/logo.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

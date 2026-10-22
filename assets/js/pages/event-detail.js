@@ -1,0 +1,109 @@
+/* 活动详情：时间/地点/联系方式 + 亮点 + 规则 + 关联车型 */
+(function () {
+  'use strict';
+
+  var Utils = window.Utils;
+  var HttpApi = window.HttpApi;
+
+  function listOf(value) {
+    if (Array.isArray(value)) return value;
+    if (value && typeof value === 'object') return Object.keys(value).map(function (k) { return value[k]; });
+    return [];
+  }
+
+  function render(data) {
+    var hero = document.getElementById('event-hero');
+    var title = data.title || '活动详情';
+    var place = [data.storeName || data.store_name, data.venue, data.location].filter(Boolean).join(' · ');
+    var time = Utils.formatTimeRange(data.start_date, data.end_date);
+    var cover = Utils.firstImage(data.cover_img || data.cover || '');
+    var status = Utils.eventStatus(data.start_date, data.end_date);
+
+    hero.innerHTML = [
+      cover ? '<div class="article-cover-lg"><img src="' + Utils.escapeHtml(Utils.ossImg(cover, { w: 960, h: 540 })) +
+        '" alt="' + Utils.escapeHtml(title) + '"></div>' : '',
+      '<div class="article-header mt-16">',
+      '<span class="tag ' + status.cls + '">' + status.label + '</span>',
+      '<h1>' + Utils.escapeHtml(title) + '</h1>',
+      data.subtitle ? '<p class="detail-sub">' + Utils.escapeHtml(data.subtitle) + '</p>' : '',
+      data.desc ? '<div class="prose">' + Utils.sanitizeHtml(data.desc) + '</div>' : '',
+      '</div>',
+      '<div class="detail-meta mt-16">',
+      time ? '<span>时间 ' + Utils.escapeHtml(time) + '</span>' : '',
+      data.open_time ? '<span>开放时间 ' + Utils.escapeHtml(data.open_time) + '</span>' : '',
+      place ? '<span>地点 ' + Utils.escapeHtml(place) + '</span>' : '',
+      data.contact_phone ? '<span>电话 ' + Utils.escapeHtml(data.contact_phone) + '</span>' : '',
+      '</div>',
+      data.contact_phone ? '<div class="form-actions"><a class="btn btn-primary btn-sm" href="tel:' +
+        Utils.escapeHtml(data.contact_phone) + '">电话咨询</a></div>' : ''
+    ].join('');
+
+    var highlights = listOf(data.highlights || data.highlight);
+    if (highlights.length) {
+      document.getElementById('event-highlights').hidden = false;
+      document.getElementById('event-highlight-list').innerHTML = highlights.map(function (item) {
+        var text = typeof item === 'string' ? item : (item.title || item.text || item.value || item.content || '');
+        if (!text) return '';
+        var icon = typeof item === 'string' ? '✓' : (item.icon || '✓');
+        return '<div class="quick-card"><span class="quick-icon">' + Utils.escapeHtml(icon) + '</span><span><strong>' +
+          Utils.escapeHtml(text) + '</strong></span></div>';
+      }).join('');
+    }
+
+    var rules = listOf(data.rules || data.rule);
+    if (rules.length) {
+      document.getElementById('event-rules').hidden = false;
+      document.getElementById('event-rule-list').innerHTML = rules.map(function (item, i) {
+        var text = typeof item === 'string' ? item : (item.value || item.content || item.text || '');
+        if (!text) return '';
+        return '<li class="flex gap-12"><span class="tag tag-primary">' + (i + 1) + '</span><span>' +
+          Utils.escapeHtml(text) + '</span></li>';
+      }).join('');
+    }
+
+    var products = listOf(data.products || data.goods || data.goodsList);
+    if (products.length) {
+      document.getElementById('event-goods').hidden = false;
+      document.getElementById('event-goods-list').innerHTML = products.map(function (goods) {
+        return Utils.goodsCardHtml(goods);
+      }).join('');
+      Utils.syncActionStates(document.getElementById('event-goods-list'));
+    }
+
+    Utils.setSeo({
+      title: title + ' - 活动详情 - 东北电动车汇',
+      description: Utils.truncate(data.desc || data.subtitle || (title + '，活动时间：' + (time || '')), 110),
+      canonical: location.origin + location.pathname + '?id=' + encodeURIComponent(data._id || '')
+    });
+  }
+
+  function init() {
+    var id = Utils.query('id');
+    if (!id) {
+      document.getElementById('event-hero').innerHTML = Utils.emptyHtml(
+        '缺少活动参数',
+        '<a class="btn btn-outline btn-sm" href="/event/list.html">返回活动中心</a>'
+      );
+      return;
+    }
+    Utils.track('event_detail_view', { id: id });
+    Utils.bindCardActions();
+    HttpApi.activity.getDetail({ id: id }).then(function (res) {
+      var data = res && res.code === 0 ? res.data : null;
+      if (data && data._id) {
+        render(data);
+        return;
+      }
+      document.getElementById('event-hero').innerHTML = Utils.emptyHtml(
+        '活动不存在或已结束',
+        '<a class="btn btn-outline btn-sm" href="/event/list.html">返回活动中心</a>'
+      );
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();

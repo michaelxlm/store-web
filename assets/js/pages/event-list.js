@@ -1,0 +1,69 @@
+/* 活动中心：一次性拉取后按状态（进行中/即将开始/已结束）本地筛选 */
+(function () {
+  'use strict';
+
+  var Utils = window.Utils;
+  var HttpApi = window.HttpApi;
+
+  var events = [];
+  var status = 'all';
+
+  function statusOf(item) {
+    var now = Date.now();
+    var start = Utils.toDate(item.start_date);
+    var end = Utils.toDate(item.end_date);
+    if (start && now < start.getTime()) return 'upcoming';
+    if (end && now > end.getTime()) return 'ended';
+    return 'ongoing';
+  }
+
+  function render() {
+    var box = document.getElementById('event-list');
+    var list = status === 'all' ? events : events.filter(function (item) {
+      return statusOf(item) === status;
+    });
+    if (!list.length) {
+      box.innerHTML = Utils.emptyHtml('暂无活动', '<a class="btn btn-outline btn-sm" href="/shop/city.html">逛逛同城门店</a>');
+      return;
+    }
+    box.innerHTML = list.map(function (item) {
+      return Utils.eventCardHtml(item);
+    }).join('');
+  }
+
+  function init() {
+    var box = document.getElementById('event-list');
+    var tabs = document.getElementById('event-tabs');
+    if (!box || !tabs) return;
+
+    Utils.delegate(tabs, '.tab', 'click', function () {
+      status = this.getAttribute('data-status') || 'all';
+      Utils.qsa('#event-tabs .tab').forEach(function (btn) {
+        btn.classList.remove('is-active');
+        btn.setAttribute('aria-selected', 'false');
+      });
+      this.classList.add('is-active');
+      this.setAttribute('aria-selected', 'true');
+      render();
+    });
+
+    HttpApi.activity.getList({ pageIndex: 1, pageSize: 50 }).then(function (res) {
+      events = (res && res.rows) || [];
+      // 进行中优先、即将开始次之、已结束最后
+      var weight = { ongoing: 0, upcoming: 1, ended: 2 };
+      events.sort(function (a, b) {
+        var wa = weight[statusOf(a)];
+        var wb = weight[statusOf(b)];
+        if (wa !== wb) return wa - wb;
+        return String(a.start_date || '').localeCompare(String(b.start_date || ''));
+      });
+      render();
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();

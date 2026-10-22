@@ -1,0 +1,20 @@
+        <section class="page-heading">
+          <h1 id="webview-title">浏览页面</h1>
+          <p id="webview-desc">正在打开外部页面…</p>
+        </section>
+
+        <div class="card" id="webview-blocked" hidden>
+          <div class="empty">
+            <strong>暂不支持打开该网页</strong>
+            <p id="webview-blocked-reason">该网页来源不在允许范围内，已为你拦截。</p>
+            <a class="btn btn-primary btn-sm" href="/">返回首页</a>
+          </div>
+        </div>
+
+        <div class="webview-frame card" id="webview-frame" hidden>
+          <iframe id="webview-iframe" title="外部页面" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-popups allow-forms"></iframe>
+        </div>
+
+        <p class="text-muted mt-8" id="webview-tip" hidden>
+          页面无法显示？<a id="webview-open" href="/" target="_blank" rel="noopener noreferrer">在新窗口打开</a>
+        </p>

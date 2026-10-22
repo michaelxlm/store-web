@@ -1,0 +1,17 @@
+/* 404 页 */
+.error-code {
+  font-size: 64px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: var(--primary);
+  opacity: .9;
+}
+
+.error-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 6px;
+}

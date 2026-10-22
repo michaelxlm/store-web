@@ -1,0 +1,24 @@
+/* 媒体库：内嵌视频播放器 */
+.media-player { background: #000; }
+
+.media-player video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+}
+
+.media-empty {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: rgba(255, 255, 255, .62);
+  font-size: 12px;
+}
+
+.media-goods-link { color: var(--primary); }
+.media-goods-link:hover { text-decoration: underline; }
+
+.video-body .video-title { margin-bottom: 4px; }

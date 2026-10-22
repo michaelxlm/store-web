@@ -1,0 +1,39 @@
+/* 视频播放页 */
+.video-stage {
+  position: relative;
+  background: #000;
+  border-radius: var(--radius-l);
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  max-height: 72vh;
+  margin: 0 auto;
+}
+
+.video-stage video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+}
+
+.video-stage-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, .82);
+  color: #fff;
+  text-align: center;
+  padding: 20px;
+}
+
+.video-stage-empty strong { font-size: 16px; }
+.video-stage-empty .text-muted { color: rgba(255, 255, 255, .66); }
+
+@media (max-width: 599px) {
+  .video-stage { border-radius: var(--radius); }
+}

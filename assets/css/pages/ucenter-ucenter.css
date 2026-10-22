@@ -1,0 +1,98 @@
+/* 个人中心 */
+.ucenter-avatar img {
+  display: block;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.ucenter-tile { position: relative; }
+
+.tile-badge {
+  position: absolute;
+  top: 7px;
+  right: 9px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--danger);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 17px;
+  text-align: center;
+}
+
+.menu-item-button {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.menu-item-button:last-child { border-bottom: 0; }
+.menu-item-button:hover { color: var(--primary); }
+
+/* ------------------------------ 账户中心双态 ------------------------------ */
+.ucenter-hero .ucenter-avatar { flex: none; }
+
+.ucenter-hero-main { min-width: 0; }
+
+.ucenter-hero p { text-wrap: pretty; }
+
+.ucenter-hero-actions { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+
+.ucenter-hero-actions .btn { padding: 8px 14px; font-size: 12.5px; }
+
+.btn-hero-ghost { background: rgba(255, 255, 255, .16); border: 1px solid rgba(255, 255, 255, .38); color: #fff; }
+
+.btn-hero-ghost:hover { background: rgba(255, 255, 255, .26); }
+
+.btn-hero-solid { background: #fff; border: 1px solid #fff; color: var(--primary); }
+
+.btn-hero-solid:hover { background: #f2f3ff; }
+
+.ucenter-guest { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+
+.ucenter-guest-main strong { font-size: 15px; }
+
+.ucenter-guest-main p { margin-top: 4px; font-size: 12.5px; color: var(--muted); text-wrap: pretty; }
+
+.ucenter-merchant-card { display: grid; gap: 14px; }
+
+.ucenter-merchant-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+
+.ucenter-merchant-title { display: flex; align-items: center; gap: 8px; }
+
+.ucenter-merchant-title strong { font-size: 15px; }
+
+.ucenter-merchant-expire { font-size: 12px; color: var(--muted); }
+
+.ucenter-merchant-links { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+
+.ucenter-merchant-link {
+  display: grid;
+  gap: 3px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+}
+
+.ucenter-merchant-link:hover { border-color: var(--primary); }
+
+.ucenter-merchant-link strong { font-size: 13.5px; }
+
+.ucenter-merchant-link span { font-size: 11.5px; color: var(--muted); }
+
+@media (max-width: 640px) {
+  .ucenter-hero { flex-wrap: wrap; }
+  .ucenter-hero .ucenter-avatar { width: 48px; height: 48px; }
+  .ucenter-hero-main { flex: 1 1 180px; }
+  .ucenter-hero-actions { width: 100%; margin-left: 0; }
+  .ucenter-merchant-links { grid-template-columns: minmax(0, 1fr); }
+}

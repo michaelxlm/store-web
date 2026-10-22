@@ -1,0 +1,35 @@
+        <section class="page-heading">
+          <h1>常见问题</h1>
+          <p>选车、用车、政策法规等常见问题解答，点击问题展开答案。</p>
+        </section>
+
+        <form class="search-inline" id="faq-search" role="search">
+          <input class="input" type="search" id="faq-keyword" placeholder="搜索常见问题…" aria-label="搜索常见问题" autocomplete="off">
+          <button class="btn btn-primary" type="submit">搜索</button>
+          <button class="btn btn-ghost" type="button" id="faq-clear" hidden>清空</button>
+        </form>
+
+        <div class="tabs mt-16" id="faq-tabs" role="tablist">
+          <button type="button" class="tab is-active" data-category="all" role="tab" aria-selected="true">全部</button>
+          <button type="button" class="tab" data-category="purchase" role="tab" aria-selected="false">选车指南</button>
+          <button type="button" class="tab" data-category="maintenance" role="tab" aria-selected="false">使用维护</button>
+          <button type="button" class="tab" data-category="policy" role="tab" aria-selected="false">政策法规</button>
+          <button type="button" class="tab" data-category="faq" role="tab" aria-selected="false">使用常识</button>
+        </div>
+
+        <div class="faq-list mt-16" id="faq-list">
+          <div class="loading"><span class="spinner" aria-hidden="true"></span><span>加载常见问题…</span></div>
+        </div>
+
+        <div class="load-more">
+          <button type="button" class="btn btn-outline" id="faq-more" hidden>加载更多</button>
+          <p class="text-muted text-center" id="faq-end" hidden>没有更多了</p>
+        </div>
+
+        <section class="section" id="faq-goods" hidden>
+          <div class="section-head">
+            <h2 class="section-title">推荐车型</h2>
+            <a class="section-more" href="/shop/shop.html">全部车型 →</a>
+          </div>
+          <div class="goods-grid" id="faq-goods-list"></div>
+        </section>

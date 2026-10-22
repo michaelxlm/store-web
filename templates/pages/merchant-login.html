@@ -1,0 +1,122 @@
+        <section class="page-heading">
+          <h1>商家中心</h1>
+          <p>本地商户入驻 · 公域展示 · 活动推广</p>
+        </section>
+
+        <div class="merchant-login">
+          <div class="merchant-card merchant-login-card">
+            <div class="merchant-login-hero">
+              <h1>登录 / 入驻</h1>
+              <p>已入驻商家直接登录；新商家提交资料后即可创建店铺</p>
+            </div>
+
+            <button class="merchant-wx-btn" type="button" id="ml-wx">微信一键登录 / 入驻</button>
+            <p class="merchant-wx-tip" id="ml-wx-tip">微信内打开自动识别身份，已入驻商家免密直达</p>
+
+            <div class="merchant-qr" id="ml-qr" hidden>
+              <div class="merchant-qr-box">
+                <img id="ml-qr-img" alt="微信扫码登录二维码" width="180" height="180">
+                <div class="merchant-qr-mask" id="ml-qr-mask" hidden>
+                  <span id="ml-qr-mask-text">二维码已失效</span>
+                  <button type="button" class="btn btn-outline btn-sm" id="ml-qr-refresh">刷新二维码</button>
+                </div>
+              </div>
+              <p class="merchant-qr-tip" id="ml-qr-tip">正在生成登录二维码…</p>
+            </div>
+
+            <div class="merchant-divider">或使用账号密码</div>
+
+            <div class="merchant-switch" id="ml-switch">
+              <button type="button" class="is-active" data-mode="login">登录</button>
+              <button type="button" data-mode="register">我要入驻</button>
+            </div>
+
+            <form class="merchant-form" id="ml-login-form" novalidate>
+              <label class="field">
+                <span class="field-label">账号</span>
+                <input class="input" type="text" id="ml-username" placeholder="商家账号" autocomplete="username">
+              </label>
+              <label class="field">
+                <span class="field-label">密码</span>
+                <input class="input" type="password" id="ml-password" placeholder="登录密码" autocomplete="current-password">
+              </label>
+              <button class="btn btn-primary btn-block" type="submit" id="ml-login-submit">登 录</button>
+              <button class="merchant-forgot" type="button" id="ml-forgot">忘记密码？</button>
+            </form>
+
+            <form class="merchant-form" id="ml-reg-form" hidden novalidate>
+              <label class="field">
+                <span class="field-label">账号</span>
+                <input class="input" type="text" id="ml-reg-username" placeholder="字母开头，4–32 位字母/数字/下划线" autocomplete="username">
+              </label>
+              <label class="field">
+                <span class="field-label">密码</span>
+                <input class="input" type="password" id="ml-reg-password" placeholder="不少于 8 位" autocomplete="new-password">
+              </label>
+              <label class="field">
+                <span class="field-label">店铺名称</span>
+                <input class="input" type="text" id="ml-reg-store" placeholder="如：xx车行 / xx旗舰店" maxlength="40">
+              </label>
+              <div class="form-grid">
+                <label class="field">
+                  <span class="field-label">联系人</span>
+                  <input class="input" type="text" id="ml-reg-contact" placeholder="姓名" maxlength="20">
+                </label>
+                <label class="field">
+                  <span class="field-label">联系电话</span>
+                  <input class="input" type="tel" id="ml-reg-phone" placeholder="手机号" maxlength="20">
+                </label>
+                <label class="field">
+                  <span class="field-label">所在城市</span>
+                  <input class="input" type="text" id="ml-reg-city" placeholder="如：长春" maxlength="20">
+                </label>
+                <label class="field">
+                  <span class="field-label">主营品类</span>
+                  <input class="input" type="text" id="ml-reg-category" placeholder="如：电动车" maxlength="20">
+                </label>
+              </div>
+              <button class="btn btn-primary btn-block" type="submit" id="ml-reg-submit">提交入驻申请</button>
+              <p class="field-hint">提交后进入平台审核，审核通过后即可创建店铺并开通公域展示。</p>
+            </form>
+          </div>
+        </div>
+
+        <section class="section">
+          <div class="section-head">
+            <h2 class="section-title">入驻流程</h2>
+          </div>
+          <div class="stat-grid">
+            <div class="stat">
+              <div class="stat-value">1</div>
+              <div class="stat-label">注册账号 / 微信登录</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value">2</div>
+              <div class="stat-label">完善店铺资料</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value">3</div>
+              <div class="stat-label">选购基础年费套餐</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value">4</div>
+              <div class="stat-label">进入同城找店公域展示</div>
+            </div>
+          </div>
+        </section>
+
+        <div class="modal-mask" id="ml-forgot-modal" role="dialog" aria-modal="true" aria-labelledby="ml-forgot-title">
+          <div class="modal">
+            <h3 id="ml-forgot-title">找回密码</h3>
+            <div class="merchant-modal-text">
+              <p>本平台暂不支持短信自助重置，可通过以下方式找回登录：</p>
+              <p>1、若已绑定微信，点击下方「微信一键登录」即可免密直达。</p>
+              <p>2、若仍无法登录，请联系平台客服核验身份后重置密码。</p>
+              <div class="merchant-service" id="ml-service">平台客服微信：<b>younisuoxiang1</b>（点击复制）</div>
+            </div>
+            <div class="modal-actions">
+              <button class="btn btn-outline" type="button" id="ml-forgot-close">知道了</button>
+              <button class="btn btn-primary" type="button" id="ml-forgot-wx">微信一键登录</button>
+            </div>
+          </div>
+        </div>

@@ -1,0 +1,52 @@
+        <section class="page-heading">
+          <h1>全部车型</h1>
+          <p>按关键词、分类与价格区间筛选，找到适合您的出行座驾。</p>
+        </section>
+
+        <form class="search-inline" id="shop-search" role="search">
+          <input class="input" type="search" name="keyword" id="shop-keyword" placeholder="搜索车型名称或规格" aria-label="搜索车型">
+          <button class="btn btn-primary" type="submit">搜索</button>
+        </form>
+
+        <div class="filter-bar">
+          <div class="filter-row">
+            <span class="filter-label">分类</span>
+            <div class="filter-options" id="shop-tags">
+              <button type="button" class="chip is-active" data-tag="all">全部</button>
+              <button type="button" class="chip" data-tag="hot">热门</button>
+              <button type="button" class="chip" data-tag="二轮电动车">二轮电动车</button>
+              <button type="button" class="chip" data-tag="三轮电动车">三轮电动车</button>
+            </div>
+          </div>
+          <div class="filter-row">
+            <span class="filter-label">价格</span>
+            <div class="form-row">
+              <input class="input" type="number" min="0" id="shop-min-price" placeholder="最低价" aria-label="最低价">
+              <span class="text-muted">—</span>
+              <input class="input" type="number" min="0" id="shop-max-price" placeholder="最高价" aria-label="最高价">
+              <button type="button" class="btn btn-outline btn-sm" id="shop-apply-price">确定</button>
+            </div>
+          </div>
+          <div class="filter-row">
+            <span class="filter-label">排序</span>
+            <div class="sort-bar" id="shop-sort">
+              <button type="button" class="is-active" data-sort="default" data-order="desc">综合排序</button>
+              <button type="button" data-sort="sales" data-order="desc">销量优先</button>
+              <button type="button" data-sort="price" data-order="asc">价格从低到高</button>
+              <button type="button" data-sort="price" data-order="desc">价格从高到低</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex-between">
+          <p class="text-muted">共 <strong id="shop-total">0</strong> 款车型</p>
+          <a class="btn btn-outline btn-sm" href="/shop/compare.html">车型对比 <span id="shop-compare-count">0</span></a>
+        </div>
+
+        <div class="goods-grid" id="shop-grid">
+          <div class="loading"><span class="spinner" aria-hidden="true"></span><span>加载车型…</span></div>
+        </div>
+
+        <div class="load-more">
+          <button type="button" class="btn btn-outline" id="shop-more" hidden>加载更多</button>
+        </div>

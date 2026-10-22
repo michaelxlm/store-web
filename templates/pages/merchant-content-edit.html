@@ -1,0 +1,158 @@
+        <section class="page-heading">
+          <h1 id="ce-title">创作文章</h1>
+          <p>提交即发布；有效订阅期内进入顾客端公域展示</p>
+        </section>
+
+        <div class="merchant-shell">
+          <nav class="merchant-nav" aria-label="商家中心导航">
+            <a href="/merchant/index.html">商家中心</a>
+            <a href="/merchant/stores.html">我的店铺</a>
+            <a href="/merchant/plans.html">套餐与续费</a>
+            <a href="/merchant/content.html" class="active" aria-current="page">内容营销</a>
+            <a href="/shop/city.html">同城找店</a>
+            <a href="/shop/shop.html">返回前台</a>
+          </nav>
+
+          <div class="merchant-main">
+            <div class="merchant-card">
+              <!-- 文章 -->
+              <form class="merchant-form" id="ce-article" novalidate>
+                <label class="field">
+                  <span class="field-label">文章标题 <span class="merchant-required">*</span></span>
+                  <input class="input" type="text" id="ce-title-input" placeholder="顾客看到的标题" maxlength="60">
+                </label>
+                <label class="field">
+                  <span class="field-label">摘要</span>
+                  <textarea class="textarea" id="ce-summary" placeholder="一句话摘要（列表展示）" maxlength="120"></textarea>
+                </label>
+                <label class="field">
+                  <span class="field-label">正文 <span class="merchant-required">*</span></span>
+                  <textarea class="textarea" id="ce-content" placeholder="文章正文内容" maxlength="5000"></textarea>
+                </label>
+                <div class="field">
+                  <span class="field-label">封面图</span>
+                  <div class="merchant-upload-row">
+                    <button class="merchant-upload-box" type="button" id="ce-article-cover-box" aria-label="上传文章封面">
+                      <img id="ce-article-cover-img" alt="" hidden>
+                      <span id="ce-article-cover-plus">＋ 上传封面</span>
+                      <span class="is-busy" id="ce-article-cover-busy" hidden>上传中…</span>
+                    </button>
+                    <div class="merchant-upload-side">
+                      <span class="field-hint">建议 16:9，点击选择图片上传</span>
+                    </div>
+                  </div>
+                </div>
+              </form>
+
+              <!-- 问答 -->
+              <form class="merchant-form" id="ce-qa" novalidate hidden>
+                <label class="field">
+                  <span class="field-label">问题 <span class="merchant-required">*</span></span>
+                  <input class="input" type="text" id="ce-question" placeholder="顾客常问的问题" maxlength="80">
+                </label>
+                <label class="field">
+                  <span class="field-label">答案 <span class="merchant-required">*</span></span>
+                  <textarea class="textarea" id="ce-answer" placeholder="针对该问题的解答" maxlength="2000"></textarea>
+                </label>
+              </form>
+
+              <!-- 视频 -->
+              <form class="merchant-form" id="ce-video" novalidate hidden>
+                <label class="field">
+                  <span class="field-label">视频标题 <span class="merchant-required">*</span></span>
+                  <input class="input" type="text" id="ce-video-name" placeholder="顾客看到的标题" maxlength="60">
+                </label>
+                <div class="field">
+                  <span class="field-label">视频文件 <span class="merchant-required">*</span></span>
+                  <button class="merchant-upload-box merchant-upload-box--wide" type="button" id="ce-video-box" aria-label="选择并上传视频">
+                    <video id="ce-video-preview" class="merchant-video-preview" hidden></video>
+                    <span id="ce-video-plus">＋ 选择并上传视频</span>
+                    <span class="is-busy" id="ce-video-busy" hidden>上传中…（视频较大请耐心等待）</span>
+                  </button>
+                </div>
+                <div class="field">
+                  <span class="field-label">封面图</span>
+                  <div class="merchant-upload-row">
+                    <button class="merchant-upload-box" type="button" id="ce-video-cover-box" aria-label="上传视频封面">
+                      <img id="ce-video-cover-img" alt="" hidden>
+                      <span id="ce-video-cover-plus">＋ 上传封面</span>
+                      <span class="is-busy" id="ce-video-cover-busy" hidden>上传中…</span>
+                    </button>
+                    <div class="merchant-upload-side">
+                      <span class="field-hint">不上传封面时，顾客端展示视频首帧</span>
+                    </div>
+                  </div>
+                </div>
+                <label class="field">
+                  <span class="field-label">简介</span>
+                  <textarea class="textarea" id="ce-describe" placeholder="视频内容简介" maxlength="200"></textarea>
+                </label>
+              </form>
+
+              <!-- 通用：分类 / 标签（文章、问答） -->
+              <div class="merchant-form" id="ce-common">
+                <div class="form-grid">
+                  <label class="field">
+                    <span class="field-label">分类标识</span>
+                    <input class="input" type="text" id="ce-category" placeholder="如：dianliuch、peijian（可留空）" maxlength="30">
+                  </label>
+                  <label class="field">
+                    <span class="field-label">标签</span>
+                    <input class="input" type="text" id="ce-tags" placeholder="多个标签用英文逗号分隔" maxlength="80">
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="merchant-card">
+              <div class="merchant-card-head">
+                <div>
+                  <h2>关联商品（可选）</h2>
+                  <p>顾客浏览对应商品详情时会看到本内容</p>
+                </div>
+              </div>
+              <div class="merchant-chips" id="ce-goods-chips"></div>
+            </div>
+
+            <div class="merchant-card">
+              <div class="merchant-card-head">
+                <div>
+                  <h2>关联店铺（仅本商家）</h2>
+                  <p>顾客浏览店铺详情时会看到本内容</p>
+                </div>
+              </div>
+              <div class="merchant-chips" id="ce-store-chips"></div>
+            </div>
+
+            <div class="merchant-banner merchant-banner--info">提交即发布；账号处于有效订阅期时进入顾客端公域，到期随店铺自动下线。</div>
+
+            <div class="form-actions">
+              <button class="btn btn-primary" type="button" id="ce-submit">发布文章</button>
+              <a class="btn" href="/merchant/content.html">返回列表</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-mask" id="ce-goods-modal" role="dialog" aria-modal="true" aria-labelledby="ce-goods-title">
+          <div class="modal">
+            <h3 id="ce-goods-title">选择商品</h3>
+            <form class="search-inline" id="ce-goods-search-form" role="search">
+              <input class="input" type="search" id="ce-goods-keyword" placeholder="搜索商品名称">
+              <button class="btn btn-outline" type="submit">搜索</button>
+            </form>
+            <div class="merchant-picker-list" id="ce-goods-list"></div>
+            <div class="modal-actions">
+              <button class="btn btn-primary" type="button" id="ce-goods-done">完成</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-mask" id="ce-store-modal" role="dialog" aria-modal="true" aria-labelledby="ce-store-title">
+          <div class="modal">
+            <h3 id="ce-store-title">选择我的店铺</h3>
+            <div class="merchant-picker-list" id="ce-store-list"></div>
+            <div class="modal-actions">
+              <button class="btn btn-primary" type="button" id="ce-store-done">完成</button>
+            </div>
+          </div>
+        </div>
