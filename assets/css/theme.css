@@ -70,7 +70,7 @@ table { border-collapse: collapse; width: 100%; }
 .site-nav { display: flex; align-items: center; gap: 2px; }
 .site-nav a {
   padding: 7px 11px; border-radius: 999px; font-size: 13.5px; color: var(--text-2);
-  white-space: nowrap; transition: background .15s, color .15s;
+  white-space: nowrap; transition: background var(--dur-fast), color var(--dur-fast);
 }
 .site-nav a:hover { background: var(--surface-2); color: var(--text); }
 .site-nav a.active { background: var(--primary-weak); color: var(--primary); font-weight: 600; }
@@ -78,7 +78,7 @@ table { border-collapse: collapse; width: 100%; }
   margin-left: auto; display: flex; align-items: center; gap: 6px;
   width: 250px; height: 38px; padding: 0 5px 0 12px;
   background: var(--surface-2); border-radius: 999px;
-  transition: box-shadow .15s, background .15s;
+  transition: box-shadow var(--dur-fast), background var(--dur-fast);
 }
 .header-search:focus-within { background: #fff; box-shadow: 0 0 0 3px var(--primary-soft); }
 .header-search svg { width: 16px; height: 16px; color: var(--muted); flex: none; }
@@ -88,11 +88,13 @@ table { border-collapse: collapse; width: 100%; }
   background: var(--primary); color: #fff; font-size: 12px;
 }
 .header-actions { display: flex; align-items: center; gap: 4px; }
-.icon-btn { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 999px; color: var(--text-2); }
+/* 头部图标钮：触控区 44×44（样式审计 T5，原 36×36；图标 svg 尺寸不变） */
+.icon-btn { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 999px; color: var(--text-2); }
 .icon-btn:hover { background: var(--surface-2); }
 .icon-btn svg { width: 19px; height: 19px; }
 .header-cta {
-  margin-left: 4px; padding: 8px 14px; border-radius: 999px;
+  margin-left: 4px; padding: 8px 16px; border-radius: 999px;
+  min-height: 44px; display: inline-flex; align-items: center;
   background: var(--primary); color: #fff; font-size: 13px; font-weight: 600;
   box-shadow: 0 4px 12px var(--primary-soft);
 }
@@ -209,7 +211,7 @@ table { border-collapse: collapse; width: 100%; }
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   height: 40px; padding: 0 18px; border: 1px solid transparent; border-radius: 999px;
   background: var(--surface-2); color: var(--text); font-size: 13.5px; font-weight: 600;
-  transition: background .15s, transform .15s, box-shadow .15s;
+  transition: background var(--dur-fast), transform var(--dur-fast), box-shadow var(--dur-fast);
   white-space: nowrap;
 }
 .btn:hover { background: var(--surface-3); }
@@ -232,7 +234,7 @@ table { border-collapse: collapse; width: 100%; }
 .input, .select, .textarea {
   width: 100%; border: 1px solid var(--line); border-radius: var(--radius);
   background: var(--surface); padding: 10px 12px; font-size: 13.5px;
-  outline: none; transition: border-color .15s, box-shadow .15s;
+  outline: none; transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
 }
 .input:focus, .select:focus, .textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-soft); }
 .textarea { min-height: 110px; resize: vertical; }
@@ -310,7 +312,7 @@ table { border-collapse: collapse; width: 100%; }
 .quick-card {
   display: flex; align-items: center; gap: 10px; padding: 14px;
   background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
-  box-shadow: var(--shadow-s); transition: border-color .15s, transform .15s;
+  box-shadow: var(--shadow-s); transition: border-color var(--dur-fast), transform var(--dur-fast);
 }
 .quick-card:hover { border-color: var(--primary); transform: translateY(-1px); }
 .quick-icon { width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; background: var(--primary-weak); color: var(--primary); flex: none; }
@@ -323,11 +325,11 @@ table { border-collapse: collapse; width: 100%; }
 .goods-card {
   position: relative; display: flex; flex-direction: column; overflow: hidden;
   background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-l);
-  box-shadow: var(--shadow-s); transition: transform .18s, box-shadow .18s, border-color .18s;
+  box-shadow: var(--shadow-s); transition: transform var(--dur-base), box-shadow var(--dur-base), border-color var(--dur-base);
 }
 .goods-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); border-color: var(--line-strong); }
 .goods-media { position: relative; aspect-ratio: 4 / 3; background: var(--surface-2); overflow: hidden; }
-.goods-media img { width: 100%; height: 100%; object-fit: cover; transition: transform .35s; }
+.goods-media img { width: 100%; height: 100%; object-fit: cover; transition: transform var(--dur-slow); }
 .goods-card:hover .goods-media img { transform: scale(1.045); }
 .goods-media .tag { position: absolute; left: 8px; top: 8px; background: rgba(255, 255, 255, .92); }
 .goods-body { display: flex; flex-direction: column; gap: 5px; padding: 11px 12px 13px; flex: 1; }
@@ -336,24 +338,33 @@ table { border-collapse: collapse; width: 100%; }
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
 .goods-meta { font-size: 11.5px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 8px; }
-.goods-foot { margin-top: auto; display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; padding-top: 4px; }
+.goods-foot { margin-top: auto; display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; row-gap: 4px; flex-wrap: wrap; padding-top: 4px; }
 .price { color: var(--danger); font-weight: 700; font-size: 19px; line-height: 1.1; letter-spacing: -.02em; }
 .price small { font-size: 11px; font-weight: 600; }
 .price-old { font-size: 11.5px; color: var(--muted); text-decoration: line-through; margin-left: 4px; font-weight: 400; }
-.goods-actions { display: flex; gap: 4px; }
+/* 商品卡操作钮：命中区 44×44（样式审计 T5），视觉圆底仍 30×30 交由 ::before 承担，
+   避免放大命中区后挤压 goods-foot 的价格排版；gap 收到 0，圆底视觉间距由 7px 内缩自然形成 */
+.goods-actions { display: flex; gap: 0; margin-left: auto; }
 .icon-action {
-  width: 30px; height: 30px; display: grid; place-items: center; border: 0; border-radius: 999px;
-  background: var(--surface-2); color: var(--text-2);
+  position: relative; width: 44px; height: 44px; padding: 0;
+  display: grid; place-items: center; border: 0; border-radius: 999px;
+  background: transparent; color: var(--text-2);
+  transition: color var(--dur-fast);
 }
-.icon-action:hover, .icon-action.is-active { background: var(--primary-weak); color: var(--primary); }
-.icon-action svg { width: 16px; height: 16px; }
+.icon-action::before {
+  content: ""; position: absolute; inset: 7px; border-radius: 999px;
+  background: var(--surface-2); transition: background var(--dur-fast);
+}
+.icon-action:hover, .icon-action.is-active { color: var(--primary); }
+.icon-action:hover::before, .icon-action.is-active::before { background: var(--primary-weak); }
+.icon-action svg { position: relative; width: 16px; height: 16px; }
 
 /* ------------------------------ 店铺卡 ------------------------------ */
 .store-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
 .store-card {
   display: flex; gap: 12px; padding: 14px; background: var(--surface);
   border: 1px solid var(--line); border-radius: var(--radius-l); box-shadow: var(--shadow-s);
-  transition: border-color .15s, transform .15s;
+  transition: border-color var(--dur-fast), transform var(--dur-fast);
 }
 .store-card:hover { border-color: var(--primary); transform: translateY(-1px); }
 .store-logo {
@@ -485,7 +496,7 @@ table { border-collapse: collapse; width: 100%; }
   transform: translate(-50%, 12px); opacity: 0; pointer-events: none;
   background: rgba(28, 28, 30, .92); color: #fff; font-size: 13px;
   padding: 9px 16px; border-radius: 999px; max-width: min(88vw, 420px);
-  transition: opacity .2s, transform .2s; text-align: center;
+  transition: opacity var(--dur-base), transform var(--dur-base); text-align: center;
 }
 #toast.is-show { opacity: 1; transform: translate(-50%, 0); }
 .modal-mask {

@@ -12,8 +12,9 @@
     "fingerprint": "node scripts/fingerprint.js",
     "sitemap": "node scripts/build-sitemap.js",
     "llms": "node scripts/build-llms.js",
-    "check": "node scripts/check-links.js",
+    "check": "node scripts/check-links.js && node scripts/check-wcag.js",
     "check:encoding": "node scripts/check-encoding.js",
+    "check:wcag": "node scripts/check-wcag.js",
     "deploy": "npm run build && npm run check"
   },
   "engines": {

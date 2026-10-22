@@ -26,6 +26,13 @@ jobs:
         run: |
           # 八站统一编码门禁（静态网站字符编码规范）：非 UTF-8/带 BOM 即中断部署，防乱码上线
           node scripts/check-encoding.js
+      - name: WCAG gate (brand contrast)
+        shell: bash
+        run: |
+          # 样式审计 T4：品牌主色白字对比度 ≥4.5:1 + 载体不得用未验证辅助色 --accent
+          NODE=/www/server/nodejs/v20.18.3/bin/node
+          [ -x "$NODE" ] || NODE=node
+          $NODE scripts/check-wcag.js
       - name: Build (prerender + fingerprint + link/sitemap gates)
         shell: bash
         run: |

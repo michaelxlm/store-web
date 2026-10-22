@@ -20,7 +20,7 @@
 
 .faq-question { flex: 1; min-width: 0; line-height: 1.5; }
 
-.faq-arrow { flex: none; color: var(--muted); font-size: 18px; transition: transform .18s; }
+.faq-arrow { flex: none; color: var(--muted); font-size: 18px; transition: transform var(--dur-base); }
 .faq-item[open] .faq-arrow { transform: rotate(90deg); }
 
 .faq-answer {
