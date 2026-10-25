@@ -19,4 +19,5 @@
 - [关于我们](https://store.fangkelianmeng.com/about/wx.html): 东北电动车汇的团队介绍与联系方式。
 - [隐私政策](https://store.fangkelianmeng.com/about/privacy.html): 东北电动车汇隐私政策，说明我们如何收集、使用与保护您的个人信息。
 - [功能清单](https://store.fangkelianmeng.com/feature/index.html): 东北电动车汇平台功能一览：车型浏览、对比、同城找店与活动优惠。
+- [商家入驻套餐与报价](https://store.fangkelianmeng.com/merchant/pricing.html): 东北电动车汇商家入驻年费套餐：开通同城找店公域展示，多档分层报价、权益与卖点一览，帮本地商家获得同城曝光与客流。
 

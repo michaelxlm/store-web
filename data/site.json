@@ -19,6 +19,7 @@
     { "label": "活动", "url": "/event/list.html" },
     { "label": "同城找店", "url": "/shop/city.html" },
     { "label": "资讯", "url": "/article/article.html" },
+    { "label": "商家入驻", "url": "/merchant/pricing.html" },
     { "label": "我的", "url": "/ucenter/ucenter.html" }
   ],
   "sidebar_categories": [
@@ -53,6 +54,7 @@
       "items": [
         { "label": "关于我们", "url": "/about/wx.html" },
         { "label": "隐私政策", "url": "/about/privacy.html" },
+        { "label": "入驻套餐与报价", "url": "/merchant/pricing.html" },
         { "label": "商家中心", "url": "/merchant/login.html" }
       ]
     }
@@ -80,7 +82,7 @@
       {
         "title": "商家与关于",
         "links": [
-          { "label": "商家入驻", "url": "/merchant/login.html" },
+          { "label": "商家入驻", "url": "/merchant/pricing.html" },
           { "label": "商家中心", "url": "/merchant/index.html" },
           { "label": "关于我们", "url": "/about/wx.html" },
           { "label": "隐私政策", "url": "/about/privacy.html" }

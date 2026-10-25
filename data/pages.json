@@ -323,6 +323,18 @@
       "crumb_title": "套餐与续费",
       "crumbs": [{ "label": "商家中心", "url": "/merchant/index.html" }],
       "indexable": false
+    },
+    {
+      "path": "merchant/pricing",
+      "template": "merchant-pricing",
+      "style": "merchant",
+      "script": "merchant-pricing",
+      "title": "商家入驻套餐与报价 - 东北电动车汇",
+      "description": "东北电动车汇商家入驻年费套餐：开通同城找店公域展示，多档分层报价、权益与卖点一览，帮本地商家获得同城曝光与客流。",
+      "keywords": "商家入驻,同城推广,门店入驻,公域展示套餐,商户入驻费用,电动车门店推广",
+      "crumb_title": "商家入驻套餐",
+      "indexable": true,
+      "sitemap": { "priority": "0.7", "changefreq": "monthly" }
     }
   ]
 }

@@ -32,6 +32,9 @@
       filters: P + '/store/filters',
       nearby: P + '/store/nearby'
     },
+    merchantPlan: {
+      publicList: P + '/merchant-plan/list'
+    },
     user: {
       login: P + '/user/login',
       info: P + '/user/info'
@@ -463,6 +466,12 @@
     weixinOfficial: {
       getHubContent: ns(PATHS.weixinOfficial.hub),
       hub: ns(PATHS.weixinOfficial.hub)
+    },
+
+    // 商家套餐对客展示（WO-31）：免鉴权只读，返回在售套餐分层
+    merchantPlan: {
+      publicList: ns(PATHS.merchantPlan.publicList),
+      list: ns(PATHS.merchantPlan.publicList)
     },
 
     getInitInfo: ns(PATHS.init),

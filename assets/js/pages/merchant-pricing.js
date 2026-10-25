@@ -1,0 +1,111 @@
+/* ==========================================================================
+   merchant-pricing.js · 商家套餐对客展示页（WO-31，免登录公开只读）
+   --------------------------------------------------------------------------
+   从公开接口拉在售套餐，按后端 order 分层渲染卖点卡片；CTA 跳商家登录入驻。
+   仅依赖 window.Utils / window.HttpApi，不引入商家会话库（Merchant）。
+   ========================================================================== */
+(function (global) {
+  'use strict';
+
+  var Utils = global.Utils;
+  var HttpApi = global.HttpApi;
+
+  var state = { loading: true, plans: [] };
+
+  function $(id) { return document.getElementById(id); }
+
+  function esc(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  /** 分 → 元（千分位、去多余小数） */
+  function fenToYuan(fen) {
+    var n = Number(fen) || 0;
+    var yuan = n / 100;
+    return (Math.round(yuan * 100) / 100).toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1');
+  }
+
+  function planId(plan) { return plan && (plan._id || plan.id) || ''; }
+
+  /** 推荐档：优先「基础年费」（单店稳定经营的甜点位），缺省取第 2 档 */
+  function featuredIndex(plans) {
+    for (var i = 0; i < plans.length; i++) {
+      if (/基础年费/.test(plans[i].name || '')) return i;
+    }
+    return plans.length > 1 ? 1 : 0;
+  }
+
+  function renderPlans() {
+    var box = $('pricing-plans');
+    var empty = $('pricing-empty');
+    if (!box || !empty) return;
+
+    if (!state.plans.length) {
+      if (state.loading) {
+        box.hidden = false;
+        box.innerHTML = '<div class="loading"><span class="spinner" aria-hidden="true"></span><span>加载套餐…</span></div>';
+        empty.hidden = true;
+        return;
+      }
+      box.innerHTML = '';
+      box.hidden = true;
+      empty.hidden = false;
+      return;
+    }
+
+    box.hidden = false;
+    empty.hidden = true;
+    var feat = featuredIndex(state.plans);
+
+    box.innerHTML = state.plans.map(function (plan, index) {
+      var price = Number(plan.price) || 0;
+      var original = Number(plan.originalPrice) || 0;
+      var benefits = Array.isArray(plan.benefits) ? plan.benefits : [];
+      var benefitHtml = benefits.map(function (b) {
+        var title = b && typeof b === 'object' ? b.title : b;
+        var desc = b && typeof b === 'object' ? b.desc : '';
+        return '<span>✓ ' + esc(title || '') + (desc ? '<small>' + esc(desc) + '</small>' : '') + '</span>';
+      }).join('');
+
+      return '<div class="merchant-plan merchant-card' + (index === feat ? ' is-featured' : '') + '">' +
+        (index === feat ? '<span class="merchant-plan-flag">推荐</span>' : '') +
+        '<div class="merchant-plan-name">' + esc(plan.name || '套餐') + '</div>' +
+        '<div class="merchant-plan-price">' +
+        '<strong>￥' + esc(fenToYuan(price)) + '</strong>' +
+        (original > price ? '<del>￥' + esc(fenToYuan(original)) + '</del>' : '') +
+        '</div>' +
+        '<div class="merchant-plan-duration">有效期 ' + esc(plan.durationDays || 365) + ' 天 · 可带 ' + esc(plan.maxStores || 1) + ' 家店铺上公域</div>' +
+        (plan.describe ? '<div class="merchant-plan-desc">' + esc(plan.describe) + '</div>' : '') +
+        (benefitHtml ? '<div class="merchant-plan-benefits">' + benefitHtml + '</div>' : '') +
+        '<a class="btn btn-primary btn-block" href="/merchant/login.html?plan=' + esc(planId(plan)) + '">立即入驻</a>' +
+        '</div>';
+    }).join('');
+  }
+
+  function loadData() {
+    state.loading = true;
+    HttpApi.merchantPlan.publicList().then(function (res) {
+      state.loading = false;
+      state.plans = res && res.code === 0 && Array.isArray(res.rows) ? res.rows : [];
+      renderPlans();
+    }).catch(function () {
+      state.loading = false;
+      state.plans = [];
+      renderPlans();
+    });
+  }
+
+  function init() {
+    if (!HttpApi) return;
+    if (Utils && Utils.track) Utils.track('pricing_visit', {});
+    loadData();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})(window);

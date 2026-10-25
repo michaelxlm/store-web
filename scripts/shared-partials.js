@@ -92,7 +92,8 @@ function renderSidebar(site, page) {
   return '<aside class="site-sidebar" aria-label="站点导航">\n' + groups + '\n' +
     '  <div class="sidebar-card">\n' +
     '    <strong>我是商家</strong>\n' +
-    '    <p>入驻、年费套餐与内容营销，一站管理门店。</p>\n' +
+    '    <p>看套餐报价、开通同城公域展示，一站管理门店。</p>\n' +
+    '    <a href="/merchant/pricing.html">查看入驻套餐 →</a>\n' +
     '    <a href="/merchant/login.html">进入商家中心 →</a>\n' +
     '  </div>\n' +
     '</aside>';
