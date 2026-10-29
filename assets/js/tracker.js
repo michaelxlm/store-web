@@ -25,7 +25,7 @@
   'use strict';
 
   // SDK 版本：与中台 main-api/app/sdk/tracker.js 保持同步（由 main-api/scripts/check-tracker-consistency.js 守卫）
-  var SDK_VERSION = '2.3.0'; // 2.3.0 WO-94：新增 Core Web Vitals（LCP/INP/CLS）真实用户采集
+  var SDK_VERSION = '2.4.0'; // 2.4.0 WO-138：渠道归因升级为一级字段 src（会话持久 + 全事件携带 + 白名单校验）
 
   var CONFIG = {
     // 上报端点（中台统一埋点端点）
@@ -39,6 +39,8 @@
     // 存储键
     visitorKey: '__tk_vid',
     sessionKey: '__tk_sid',
+    // 渠道归因存储键（WO-138）：会话级，新会话重新归因，不做跨会话长尾归因
+    srcKey: '__tk_src',
     // 会话有效期（毫秒）：30 分钟无操作视为新会话
     sessionTTL: 30 * 60 * 1000,
     // 批量 flush 间隔（毫秒）
@@ -61,6 +63,49 @@
   var queue = [];
   var flushTimer = null;
   var lastPath = null;
+
+  /* ------------------------------ 渠道归因（WO-138） ------------------------------ */
+  /**
+   * 客户端白名单：与中台 app/utils/channelSrcHelper.js 的登记口径一致。
+   * 服务端会再做一次权威校验（白名单外降级未归因），本层过滤只是不把
+   * 任意 query 字符串发出去（兼防注入值污染），不是安全边界。
+   */
+  var SRC_ALLOWED = [
+    'gg', 'baidu', 'bing', 'gzh', 'xcx',
+    'wx-mp', 'dy-mp', 'ks-mp',
+    'juejin', 'zhihu', 'v2ex', 'sspai', 'smzdm', 'sheji', 'shequ', 'mcp-landing',
+  ];
+
+  /** 渠道值归一：只保留小写字母/数字/下划线/短横线，且必须在白名单内 */
+  function normalizeSrc(value) {
+    var v = String(value || '').trim().toLowerCase().slice(0, 32);
+    if (!/^[a-z0-9_-]+$/.test(v)) return '';
+    for (var i = 0; i < SRC_ALLOWED.length; i++) {
+      if (SRC_ALLOWED[i] === v) return v;
+    }
+    return '';
+  }
+
+  /**
+   * 落地页首触归因：首次进页时若 URL 带合法 ?src= 则写入会话存储，
+   * 之后站内切页（即使 URL 已不含 src）仍沿用同一渠道，避免 UV 归因丢失。
+   * 会话级隔离：同一标签页会话只认首触渠道（first-touch in session）。
+   */
+  function persistSrcFromUrl() {
+    if (readStore(global.sessionStorage, CONFIG.srcKey) !== null) return; // 本会话已归因，不覆盖
+    try {
+      var qs = global.location && global.location.search;
+      if (!qs) return;
+      var sp = new URLSearchParams(qs);
+      var src = normalizeSrc(sp.get('src'));
+      if (src) writeStore(global.sessionStorage, CONFIG.srcKey, src);
+    } catch (e) { /* URLSearchParams / 存储不可用时忽略归因 */ }
+  }
+
+  /** 当前会话的渠道标识（无则空串 = 未归因） */
+  function getSrc() {
+    return normalizeSrc(readStore(global.sessionStorage, CONFIG.srcKey));
+  }
 
   /* ------------------------------ 存储工具 ------------------------------ */
   // localStorage / sessionStorage 在隐私模式、跨域 iframe 下可能抛异常，全部包 try
@@ -198,6 +243,8 @@
       event: event || 'custom',
       page: pageType(),
       path: currentPath(),
+      // 渠道归因（WO-138）：一级字段，非 pv 事件也携带
+      src: getSrc(),
       visitorId: getVisitorId(),
       sessionId: getSessionId(),
       ts: Date.now(),
@@ -411,6 +458,7 @@
     patchHistory();
     bindDataTrack();
     bindFlushOnLeave();
+    persistSrcFromUrl(); // 渠道归因先于首次 PV，保证落地页那一条就带上 src
     trackPv();
     if (CONFIG.webVitals) initWebVitals();
   }
@@ -429,6 +477,7 @@
     flush: flush,
     config: CONFIG,
     visitorId: getVisitorId,
+    src: getSrc, // 当前会话渠道（WO-138，供接入方自查）
     sdkVersion: SDK_VERSION,
   };
 
