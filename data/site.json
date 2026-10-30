@@ -90,15 +90,15 @@
       }
     ],
     "sister_sites": [
-      { "label": "一珩成长笔记 · xuyiheng.com", "url": "https://xuyiheng.com/" },
-      { "label": "明先生日常 · xuliming.com", "url": "https://xuliming.com/" },
-      { "label": "cs调色盘 · 2002cs.com", "url": "https://2002cs.com/" },
-      { "label": "访客小站 · fangkelianmeng.com", "url": "https://fangkelianmeng.com/" },
-      { "label": "小满美图 · img.fangkelianmeng.com", "url": "https://img.fangkelianmeng.com/" },
-      { "label": "小满手记 · zangeng.com", "url": "https://zangeng.com/" },
-      { "label": "实测手记 · 585.ink", "url": "https://585.ink/" },
-      { "label": "年表拾遗 · 20101115.com", "url": "https://20101115.com/" },
-      { "label": "小满券仓 · coupon.zangeng.com", "url": "https://coupon.zangeng.com/" }
+      { "label": "一珩成长笔记 · xuyiheng.com", "url": "https://xuyiheng.com/?src=hub" },
+      { "label": "明先生日常 · xuliming.com", "url": "https://xuliming.com/?src=hub" },
+      { "label": "cs调色盘 · 2002cs.com", "url": "https://2002cs.com/?src=hub" },
+      { "label": "访客小站 · fangkelianmeng.com", "url": "https://fangkelianmeng.com/?src=hub" },
+      { "label": "小满美图 · img.fangkelianmeng.com", "url": "https://img.fangkelianmeng.com/?src=hub" },
+      { "label": "小满手记 · zangeng.com", "url": "https://zangeng.com/?src=hub" },
+      { "label": "实测手记 · 585.ink", "url": "https://585.ink/?src=hub" },
+      { "label": "年表拾遗 · 20101115.com", "url": "https://20101115.com/?src=hub" },
+      { "label": "小满券仓 · coupon.zangeng.com", "url": "https://coupon.zangeng.com/?src=hub" }
     ],
     "copyright": "© 东北电动车汇",
     "icp": "京ICP备18062653号-23",
