@@ -1,3 +1,12 @@
+---
+title: store-web · 东北电动车汇
+owner: Michaelxlm
+updated: 2026-11-04
+scope: store-web
+status: 有效
+tags: [store-web, 静态站]
+---
+
 # store-web · 东北电动车汇
 
 纯静态、**零运行时依赖**的本地商户综合推广平台 Web 承载（域名 `store.fangkelianmeng.com`）。由 WO-130 从 uni-app 工程 `main-store` 的 H5/Web 承载平移拆分而来，独立仓库、独立部署，复用 main-store 的广告 / 埋点 / 后端登记，接入九站共用基础设施。
