@@ -7,6 +7,7 @@
   "oss_base": "https://antucao.oss-cn-beijing.aliyuncs.com",
   "ad_site_key": "main-store",
   "tracker_project": "main-store",
+  "build": { "sitemapMode": "explicit", "fingerprintMode": "manifest" },
   "logo": "/assets/img/logo.png",
   "favicon": "/assets/img/favicon.svg",
   "og_image": "https://store.fangkelianmeng.com/assets/img/share.jpg",

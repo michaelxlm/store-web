@@ -24,16 +24,16 @@
 (function (global) {
   'use strict';
 
-  // SDK 版本：与中台 main-api/app/sdk/tracker.js 保持同步（由 main-api/scripts/check-tracker-consistency.js 守卫）
+  // SDK 版本：所有接入项目必须保持一致（由 scripts/check-tracker-consistency.js 守卫）
   var SDK_VERSION = '2.4.0'; // 2.4.0 WO-138：渠道归因升级为一级字段 src（会话持久 + 全事件携带 + 白名单校验）
 
   var CONFIG = {
     // 上报端点（中台统一埋点端点）
     endpoint: 'https://api.xuyiheng.com/api/v1/public/track',
-    // 项目代号：本站为 main-store（东北电动车汇 · 纯静态商城站）
-    project: 'main-store',
-    // 终端类型：与旧 uni-app H5 埋点口径一致（terminal=h5）
-    terminal: 'h5',
+    // 项目代号：每个站点部署时修改（color-tool / visitor / aiWeb / ...）
+    project: 'unknown',
+    // 终端类型：Web 站点固定 web
+    terminal: 'web',
     // 调试模式：置 true 时在控制台打印上报内容（生产请保持 false）
     debug: false,
     // 存储键
@@ -74,12 +74,15 @@
     'gg', 'baidu', 'bing', 'gzh', 'xcx',
     'wx-mp', 'dy-mp', 'ks-mp',
     'juejin', 'zhihu', 'v2ex', 'sspai', 'smzdm', 'sheji', 'shequ', 'mcp-landing',
-    'wx-menu', 'wx-reply', 'wx-qrcode', 'hub', // WO-138 add: wx local-life entries + hub cross-site, keep in sync with CHANNEL_LABELS
+    // WO-138 补齐：微信本地生活入口（wechatLocalCommerce 生成链）+ 九站互推，
+    //   与中台 utils/channelSrcHelper.CHANNEL_LABELS 同步登记，客户端不先拦才能到服务端归一
+    'wx-menu', 'wx-reply', 'wx-qrcode', 'hub',
   ];
 
   /** 渠道值归一：只保留小写字母/数字/下划线/短横线，且必须在白名单内 */
   function normalizeSrc(value) {
-    var v = String(value || '').trim().toLowerCase().slice(0, 32);
+    var raw = String(value || '').trim();
+    var v = raw.toLowerCase().slice(0, 32);
     if (!/^[a-z0-9_-]+$/.test(v)) return '';
     for (var i = 0; i < SRC_ALLOWED.length; i++) {
       if (SRC_ALLOWED[i] === v) return v;
@@ -221,7 +224,10 @@
     send(events);
   }
 
-  /** 入队并按间隔批量上报 */
+  /**
+   * 入队并按间隔批量上报
+   * @param event
+   */
   function enqueue(event) {
     if (queue.length >= CONFIG.maxBatch * 5) queue.shift(); // 极端情况下丢弃最旧，防内存膨胀
     queue.push(event);
@@ -378,6 +384,11 @@
     return 'ni';
   }
 
+  /**
+   * 采集并上报 LCP / INP / CLS（真实用户 field 数据，非实验室分）
+   * 每指标每页仅上报一次（sent 去重），结算时机：load 后尽早出 LCP、页面隐藏/关闭结算、
+   * 以及 10s 兜底（保证长驻页面也有读数）。PerformanceObserver / 对应 entryType 不支持时静默跳过。
+   */
   function initWebVitals() {
     try {
       if (!global.PerformanceObserver || !global.performance) return;
@@ -394,6 +405,7 @@
       };
       var reportAll = function() { report('LCP'); report('INP'); report('CLS'); };
 
+      // LCP：取最近一次条目的 startTime
       if (supports('largest-contentful-paint')) {
         try {
           var lcpPo = new global.PerformanceObserver(function (list) {
@@ -405,6 +417,7 @@
         } catch (e) { /* ignore */ }
       }
 
+      // CLS：累加非“最近变更”引发的布局偏移
       if (supports('layout-shift')) {
         try {
           var clsValue = 0;
@@ -418,6 +431,7 @@
         } catch (e) { /* ignore */ }
       }
 
+      // INP：以 event timing 的最大 duration 近似（需 durationThreshold 支持）
       if (supports('event')) {
         try {
           var inpValue = 0;
@@ -431,6 +445,7 @@
         } catch (e) { /* ignore */ }
       }
 
+      // 页面首次隐藏 / 关闭时结算
       var flushed = false;
       var onLeave = function() {
         if (flushed) return;
@@ -446,6 +461,7 @@
         global.addEventListener('pagehide', onLeave);
         global.addEventListener('load', function () { global.setTimeout(function () { report('LCP'); }, 100); });
       }
+      // 兜底：长驻页面 10s 后结算一次，确保看板有真实读数
       global.setTimeout(reportAll, 10000);
     } catch (e) { /* CWV 采集失败绝不影响页面 */ }
   }

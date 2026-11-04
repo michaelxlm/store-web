@@ -1,11 +1,14 @@
 #!/usr/bin/env node
-'use strict';
 /* ==========================================================================
    serve.js · 本地静态预览（零依赖，Node 18+）
-   用法：node scripts/serve.js  |  node scripts/serve.js --port=8080
-   必须经 HTTP 访问：file:// 会拦 fetch，且埋点 SDK 主动跳过上报。
-   站点为多页静态 HTML：直接访问 /shop/shop.html 等带 .html 后缀的链接。
+   用法：
+     node scripts/serve.js            默认 http://localhost:4173
+     node scripts/serve.js --port=8080
+
+   必须通过 HTTP 访问：file:// 双击打开时浏览器会拦掉 fetch，且埋点 SDK 会主动跳过上报。
    ========================================================================== */
+
+'use strict';
 
 const http = require('http');
 const fs = require('fs');
@@ -25,34 +28,29 @@ const MIME = {
   '.svg': 'image/svg+xml',
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
-  '.jpeg': 'image/jpeg',
   '.webp': 'image/webp',
   '.ico': 'image/x-icon',
-  '.webmanifest': 'application/manifest+json; charset=utf-8',
 };
 
-function resolveFile(pathname) {
-  let filePath = path.join(ROOT, pathname);
-  if (pathname.endsWith('/')) filePath = path.join(filePath, 'index.html');
-  if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
-    return path.join(filePath, 'index.html');
-  }
-  return filePath;
-}
+const server = http.createServer((req, res) => {
+  // 用 WHATWG URL 而不是已废弃的 url.parse（Node 会打 CVE 相关弃用告警）
+  let pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname || '/');
+  if (pathname.endsWith('/')) pathname += 'index.html';
 
-http.createServer((req, res) => {
-  const pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname || '/');
-  const filePath = resolveFile(pathname);
+  // 防目录穿越：解析后必须仍在项目根目录内
+  const filePath = path.join(ROOT, pathname);
   if (!filePath.startsWith(ROOT)) {
     res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' });
     res.end('403 Forbidden');
     return;
   }
+
   fs.readFile(filePath, (err, data) => {
     if (err) {
-      const nf = path.join(ROOT, '404.html');
+      const notFound = path.join(ROOT, '404.html');
+      const body = fs.existsSync(notFound) ? fs.readFileSync(notFound) : '404 Not Found';
       res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
-      res.end(fs.existsSync(nf) ? fs.readFileSync(nf) : '404 Not Found');
+      res.end(body);
       return;
     }
     res.writeHead(200, {
@@ -61,7 +59,9 @@ http.createServer((req, res) => {
     });
     res.end(data);
   });
-}).listen(PORT, () => {
-  console.log('[serve] http://localhost:' + PORT + '  ←  ' + ROOT);
-  console.log('[serve] Ctrl+C 停止；改完 data/*.json 或 templates/ 记得跑 node scripts/build.js');
+});
+
+server.listen(PORT, () => {
+  console.log(`[serve] http://localhost:${PORT}  ←  ${ROOT}`);
+  console.log('[serve] Ctrl+C 停止；改完 data/*.json 记得跑 node scripts/build.js');
 });
