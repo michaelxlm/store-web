@@ -2,9 +2,12 @@
 /* ==========================================================================
    inject-scripts.js · 公共脚本/样式完整性守卫（零依赖，幂等）
    --------------------------------------------------------------------------
-   扫描构建产物 HTML，确认每页都按序引用：
+   扫描构建产物 HTML，确认每页都按序引用公共依赖：
    tokens.min.css → theme.min.css → tracker → ad-slots → coupon-slot →
    img-slot → wx-h5 → utils → http-api。缺失即 exit 1，防止手写整页漏引。
+   slot 类组件（img-slot / wx-h5 等）按站点差异挂载——某依赖仅当本站
+   至少有一页引用了它才纳入必选（即“本站启用了该组件”），被 0 页引用的
+   组件（如仅用 mp-slot 的站点的 wx-h5/img-slot）不激活，避免误红。
    ========================================================================== */
 
 const fs = require('fs');
@@ -41,13 +44,17 @@ function walk(dir, out) {
 
 function run() {
   const files = walk(ROOT, []);
+  // 先读全部页面，据此判定「本站实际启用」的依赖：某依赖只要被至少一页引用，
+  // 即视为本站启用、要求每页都引用（防手写整页漏引）；被 0 页引用的组件不激活，
+  // 从而同一份单源守卫能适配挂载不同 slot 组件的各站（mp-slot 型站点不再被 wx-h5 误红）。
+  const pages = files.map((f) => ({ f, html: fs.readFileSync(f, 'utf8') }));
+  const active = REQUIRED.filter((dep) => pages.some((p) => p.html.indexOf(dep) !== -1));
   let bad = 0;
-  files.forEach((file) => {
-    const html = fs.readFileSync(file, 'utf8');
-    const missing = REQUIRED.filter((dep) => html.indexOf(dep) === -1);
+  pages.forEach((p) => {
+    const missing = active.filter((dep) => p.html.indexOf(dep) === -1);
     if (missing.length) {
       bad++;
-      console.log('  ✗ ' + path.relative(ROOT, file).replace(/\\/g, '/') + '  缺：' + missing.join(', '));
+      console.log('  ✗ ' + path.relative(ROOT, p.f).replace(/\\/g, '/') + '  缺：' + missing.join(', '));
     }
   });
   if (bad) {
