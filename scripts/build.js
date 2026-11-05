@@ -22,8 +22,8 @@ const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
 const { renderRoute, outputOf } = require('./prerender');
-const minify = require('./minify');
-const fingerprint = require('./fingerprint');
+const minify = require('@xuyiheng/static-build-kit/minify'); // WO-164 ④ 私有包化
+const fingerprint = require('@xuyiheng/static-build-kit/fingerprint'); // WO-164 ④ 私有包化
 const buildSitemap = require('./build-sitemap');
 const buildLlms = require('./build-llms');
 
@@ -87,8 +87,8 @@ function main() {
   buildLlms.run();
 
   if (!skipCheck) {
-    require('./inject-scripts').run();
-    require('./check-links').run();
+    require('@xuyiheng/static-build-kit/inject-scripts').run(); // WO-164 ④ 私有包化
+    require('@xuyiheng/static-build-kit/check-links').run(); // WO-164 ④ 私有包化
   }
 
   console.log('== 完成，用时 ' + ((Date.now() - t0) / 1000).toFixed(2) + 's ==');
