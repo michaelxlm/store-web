@@ -16,6 +16,10 @@ const fs = require('fs');
 const path = require('path');
 const { urlPathOf } = require('./prerender');
 
+// 与 build-sitemap-dynamic.js 约定的动态块标记，重建时保留上次有效动态 URL
+const DYN_START = '<!-- DYNAMIC-SITEMAP:START -->';
+const DYN_END = '<!-- DYNAMIC-SITEMAP:END -->';
+
 const ROOT = path.resolve(__dirname, '..');
 const site = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'site.json'), 'utf8'));
 const data = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'pages.json'), 'utf8'));
@@ -50,11 +54,21 @@ function run() {
     );
   }).join('\n');
 
-  const xml =
+  let xml =
     '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
     urls + '\n</urlset>\n';
+  // 保留既有动态详情块（build-sitemap-dynamic 写入的 ?id= 条目）：
+  // 即便后续动态步骤因 API 不可达失败，上次有效的动态 URL 也不丢失
+  try {
+    const old = fs.readFileSync(path.join(ROOT, 'sitemap.xml'), 'utf8');
+    const i = old.indexOf(DYN_START), j = old.indexOf(DYN_END);
+    if (i !== -1 && j !== -1 && j > i) {
+      const block = old.slice(i, j + DYN_END.length);
+      xml = xml.replace(/<\/urlset>/i, block + '\n</urlset>');
+    }
+  } catch (e) { /* 首次生成无旧 sitemap.xml，忽略 */ }
   fs.writeFileSync(path.join(ROOT, 'sitemap.xml'), xml);
-  console.log('build-sitemap[' + mode + ']：写入 sitemap.xml（' + routes.length + ' 条 URL）');
+  console.log('build-sitemap[' + mode + ']：写入 sitemap.xml（' + routes.length + ' 条静态 URL）');
   return routes.length;
 }
 

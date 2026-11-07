@@ -10,11 +10,15 @@
      2. minify      → assets 下生成 .min 产物
      3. fingerprint → assets/manifest.json（资源版本 token）
      4. prerender   → 逐路由渲染静态 HTML（<path>.html）
-     5. build-sitemap → sitemap.xml（仅可收录页）
+     5. build-sitemap → sitemap.xml（仅可收录静态页；重建时保留既有 DYNAMIC-SITEMAP 块）
+     5.5 build-sitemap-dynamic（接中台 API）→ 枚举商品/店铺/活动/文章的 ?id= 详情页，
+         写入 sitemap.xml 的 DYNAMIC-SITEMAP 标记块；API 不可达/异常自动跳过，不阻断构建
      6. build-llms  → robots.txt + llms.txt
      7. 404 兜底页 → 根 404.html（Nginx error_page 可直接复用）
      8. inject-scripts（守卫）+ check-links（死链）；任一失败 exit 1
    用法：node scripts/build.js  |  node scripts/build.js --no-check
+   注：步骤 5.5 需构建机能访问 site.api_base（api.xuyiheng.com）才能枚举动态详情页；
+       离线/接口异常时自动跳过，仅产出静态 sitemap，不会令构建失败。
    ========================================================================== */
 
 const fs = require('fs');
@@ -53,7 +57,7 @@ function cleanLegacyOutputs() {
   });
 }
 
-function main() {
+async function main() {
   const t0 = Date.now();
   const skipCheck = process.argv.indexOf('--no-check') !== -1;
   console.log('== store-web build ==');
@@ -84,6 +88,15 @@ function main() {
   }
 
   buildSitemap.run();
+
+  // 动态详情页进 sitemap：接中台 API 枚举 ?id= 详情页（商品/店铺/活动/文章）
+  // API 不可达或异常时自动跳过，绝不阻断构建
+  try {
+    await require('./build-sitemap-dynamic').run();
+  } catch (e) {
+    console.warn('[build] sitemap:dynamic 跳过（不影响静态 sitemap）：', e && e.message);
+  }
+
   buildLlms.run();
 
   if (!skipCheck) {
@@ -94,9 +107,7 @@ function main() {
   console.log('== 完成，用时 ' + ((Date.now() - t0) / 1000).toFixed(2) + 's ==');
 }
 
-try {
-  main();
-} catch (e) {
+main().catch((e) => {
   console.error('构建失败：', e && e.stack ? e.stack : e);
   process.exit(1);
-}
+});

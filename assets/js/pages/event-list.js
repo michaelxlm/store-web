@@ -19,9 +19,10 @@
 
   function render() {
     var box = document.getElementById('event-list');
-    var list = status === 'all' ? events : events.filter(function (item) {
-      return statusOf(item) === status;
-    });
+    // 默认 all 视图下线（隐藏）已结束活动；「已结束」标签仍可找回
+    var list = status === 'all'
+      ? events.filter(function (item) { return statusOf(item) !== 'ended'; })
+      : events.filter(function (item) { return statusOf(item) === status; });
     if (!list.length) {
       box.innerHTML = Utils.emptyHtml('暂无活动', '<a class="btn btn-outline btn-sm" href="/shop/city.html">逛逛同城门店</a>');
       return;
