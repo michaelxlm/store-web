@@ -55,6 +55,12 @@
     <priority>0.3</priority>
   </url>
   <url>
+    <loc>https://store.fangkelianmeng.com/about/agreement.html</loc>
+    <lastmod>2026-10-30</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
     <loc>https://store.fangkelianmeng.com/feature/index.html</loc>
     <lastmod>2026-10-30</lastmod>
     <changefreq>monthly</changefreq>
