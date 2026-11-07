@@ -36,6 +36,11 @@
   function loadEvents() {
     return HttpApi.activity.getList({ pageIndex: 1, pageSize: 6 }).then(function (res) {
       var rows = (res && res.rows) || [];
+      // P0：过滤已结束的活动（复用 Utils.eventStatus，与活动卡片状态口径一致），首页不再展示过期活动
+      rows = rows.filter(function (it) {
+        var st = (Utils.eventStatus || function () { return { label: '' }; })(it.start_date, it.end_date);
+        return st.label !== '已结束';
+      });
       if (!rows.length) {
         fill('home-events', Utils.emptyHtml('暂无活动，稍后再来看看'));
         return;
