@@ -29,7 +29,16 @@
       "keywords": "电动车详情,车型参数,电动车报价",
       "crumb_title": "车型详情",
       "crumbs": [{ "label": "全部车型", "url": "/shop/shop.html" }],
-      "indexable": true
+      "indexable": true,
+      "jsonld": [
+        {
+          "@type": "Product",
+          "name": "电动车车型详情",
+          "description": "查看电动车详细参数、配置与报价，全方位了解车型信息。",
+          "brand": { "@type": "Brand", "name": "东北电动车汇" },
+          "offers": { "@type": "Offer", "availability": "https://schema.org/InStock" }
+        }
+      ]
     },
     {
       "path": "shop/compare",
@@ -63,7 +72,15 @@
       "keywords": "店铺信息,本地商户,门店详情,电动车门店",
       "crumb_title": "店铺信息",
       "crumbs": [{ "label": "同城找店", "url": "/shop/city.html" }],
-      "indexable": true
+      "indexable": true,
+      "jsonld": [
+        {
+          "@type": "LocalBusiness",
+          "name": "本地商户店铺",
+          "description": "查看本地商户店铺详情、主营品牌、营业时间与联系方式。",
+          "address": { "@type": "PostalAddress", "addressCountry": "CN" }
+        }
+      ]
     },
     {
       "path": "event/list",
@@ -85,7 +102,15 @@
       "keywords": "活动详情,优惠活动,门店活动",
       "crumb_title": "活动详情",
       "crumbs": [{ "label": "活动中心", "url": "/event/list.html" }],
-      "indexable": true
+      "indexable": true,
+      "jsonld": [
+        {
+          "@type": "Event",
+          "name": "电动车优惠活动",
+          "description": "查看活动时间、门店地址、优惠内容与参与方式。",
+          "organizer": { "@type": "Organization", "name": "东北电动车汇" }
+        }
+      ]
     },
     {
       "path": "article/article",
@@ -107,7 +132,16 @@
       "keywords": "文章详情,电动车资讯,选购指南",
       "crumb_title": "文章详情",
       "crumbs": [{ "label": "文章资讯", "url": "/article/article.html" }],
-      "indexable": true
+      "indexable": true,
+      "jsonld": [
+        {
+          "@type": "Article",
+          "headline": "电动车资讯与选购指南",
+          "description": "阅读电动车行业资讯、选购指南与使用保养知识。",
+          "author": { "@type": "Organization", "name": "东北电动车汇" },
+          "publisher": { "@type": "Organization", "name": "东北电动车汇" }
+        }
+      ]
     },
     {
       "path": "faq/faq",
