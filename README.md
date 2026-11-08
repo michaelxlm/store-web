@@ -1,7 +1,7 @@
 ---
 title: store-web · 东北电动车汇
 owner: Michaelxlm
-updated: 2026-11-04
+updated: 2026-11-07
 scope: store-web
 status: 有效
 tags: [store-web, 静态站]
@@ -55,6 +55,12 @@ npm run check:encoding # UTF-8 编码门禁（禁 GBK/双重乱码/BOM）
 - **编码门禁** `check-encoding.js`：所有文本文件必须为无 BOM 的 UTF-8，杜绝 Windows 侧 GBK / 双重乱码。
 - **死链门禁** `check-links.js`：产物 HTML 的站内绝对链接逐条校验目标文件存在。
 - **反色字 WCAG 门禁** `check-wcag.js`：品牌主色在亮 / 暗令牌下的可读性校验。
+
+## 收录（SEO）
+
+- `sitemap.xml` 由 `build-sitemap.js` 生成**静态路由条目**后，再由动态 sitemap 脚本补入**带参详情页**（如活动 `?id=`），以提升收录覆盖率（当前 32 条：11 条静态路由 + 21 条动态详情）。
+- 详情页为带参 URL，靠 `canonical` 与静态落地页语义保证可被抓取；新增带参详情来源时动态脚本自动并入，无需手改 sitemap。
+- **待运维动作（非代码）**：动态 sitemap 已含详情页，需在 Bing Webmaster / Google Search Console 重新提交 `https://store.fangkelianmeng.com/sitemap.xml` 以触发抓取。线上复验可用工作区根 `scripts/verify-prod.js`。
 
 ## 部署
 
