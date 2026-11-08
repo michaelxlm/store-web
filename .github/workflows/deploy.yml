@@ -54,6 +54,14 @@ jobs:
           [ -x "$NODE" ] || NODE=node
           echo "[info] node: $NODE ($($NODE -v))"
           $NODE scripts/build.js
+      - name: Apply unified site shell (footer / about / ads / cross-links)
+        shell: bash
+        run: |
+          # 展示层统一规范：build.js（含 prerender/manifest/check-links）之后的最后一步；scripts 不上线
+          NODE=/www/server/nodejs/v20.18.3/bin/node
+          [ -x "$NODE" ] || NODE=node
+          $NODE scripts/apply-site-shell.js
+          $NODE scripts/apply-site-shell.js --check
       - name: Sync to /www/wwwroot/store.fangkelianmeng.com
         shell: bash
         run: |
