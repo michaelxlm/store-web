@@ -288,6 +288,11 @@ table { border-collapse: collapse; width: 100%; }
   content: ""; position: absolute; right: -80px; top: -80px; width: 280px; height: 280px;
   border-radius: 50%; border: 1px solid rgba(255, 255, 255, .18);
 }
+/* SEO img: visually hidden but accessible to crawlers & screen readers */
+.hero-seo-img {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
 .hero-eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: rgba(255, 255, 255, .9); }
 .hero h1 { font-size: clamp(26px, 3.6vw, 42px); line-height: 1.14; letter-spacing: -.03em; max-width: 720px; }
 .hero-sub { font-size: 13.5px; line-height: 1.7; color: rgba(255, 255, 255, .92); max-width: 660px; }
