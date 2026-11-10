@@ -194,4 +194,7 @@
     <priority>0.7</priority>
   </url>
 <!-- DYNAMIC-SITEMAP:END -->
+<!-- SITE-SHELL:SITEMAP:START -->
+<url><loc>https://store.fangkelianmeng.com/sites.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+<!-- SITE-SHELL:SITEMAP:END -->
 </urlset>
