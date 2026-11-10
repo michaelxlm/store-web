@@ -54,7 +54,11 @@ function run() {
   // 先读全部页面，据此判定「本站实际启用」的依赖：某依赖只要被至少一页引用，
   // 即视为本站启用、要求每页都引用（防手写整页漏引）；被 0 页引用的组件不激活，
   // 从而同一份单源守卫能适配挂载不同 slot 组件的各站（mp-slot 型站点不再被 wx-h5 误红）。
-  const pages = files.map((f) => ({ f, html: fs.readFileSync(f, 'utf8') }));
+  // sites.html 等站群导航页由 apply-site-shell.js 生成（带 data-site-shell-hub 标记），
+  // 是只引 site-shell.css 的独立轻量页、不挂载公共组件；排除之，避免误判「整页漏引」打断部署。
+  const pages = files
+    .map((f) => ({ f, html: fs.readFileSync(f, 'utf8') }))
+    .filter((p) => p.html.indexOf('data-site-shell-hub') === -1);
   const active = REQUIRED.filter((dep) => pages.some((p) => p.html.indexOf(dep) !== -1));
   let bad = 0;
   pages.forEach((p) => {
@@ -65,11 +69,11 @@ function run() {
     }
   });
   if (bad) {
-    console.error('inject-scripts：' + bad + '/' + files.length + ' 页缺公共依赖');
+    console.error('inject-scripts：' + bad + '/' + pages.length + ' 页缺公共依赖');
     process.exit(1);
   }
-  console.log('inject-scripts：' + files.length + ' 页公共依赖齐全 ✓');
-  return files.length;
+  console.log('inject-scripts：' + pages.length + ' 页公共依赖齐全 ✓');
+  return pages.length;
 }
 
 if (require.main === module) run();
