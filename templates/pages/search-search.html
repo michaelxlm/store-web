@@ -4,10 +4,12 @@
         </section>
 
         <form class="search-inline" id="search-form" role="search">
-          <input class="input" type="search" id="search-input" placeholder="搜索电动车型号、品牌…" aria-label="搜索关键词" autocomplete="off" enterkeyhint="search">
+          <input class="input" type="search" id="search-input" placeholder="搜索电动车型号、品牌…" aria-label="搜索关键词" autocomplete="off" enterkeyhint="search" role="combobox" aria-autocomplete="list" aria-controls="search-suggest" aria-expanded="false">
           <button class="btn btn-primary" type="submit">搜索</button>
           <button class="btn btn-ghost" type="button" id="search-reset" hidden>清空</button>
         </form>
+
+        <div class="card" id="search-suggest" role="listbox" aria-label="搜索联想" hidden style="margin-top:8px;padding:8px"></div>
 
         <section class="section" id="search-hot-wrap" hidden>
           <div class="section-head">

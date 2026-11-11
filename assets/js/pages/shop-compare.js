@@ -87,7 +87,7 @@
     if (!onlyDiff || !isSame(priceValues)) {
       bodyRows.push('<tr class="' + (onlyDiff && !isSame(priceValues) ? 'is-diff' : '') + '"><td>参考价格</td>' +
         columns.map(function (col) {
-          return '<td>' + (Utils.num(col.goods_price) > 0 ? '¥' + Utils.num(col.goods_price) : '面议') + '</td>';
+          return '<td>' + (Utils.num(col.goods_price) > 0 ? '¥' + Utils.num(col.goods_price) : '到店询价') + '</td>';
         }).join('') + '</tr>');
     }
 
@@ -105,7 +105,8 @@
     box.innerHTML = '<div class="compare-wrap"><table class="compare-table"><thead>' + head.join('') +
       '</thead><tbody>' + bodyRows.join('') + '</tbody></table></div>' +
       '<p class="text-muted mt-16">共 ' + columns.length + ' 款车型参与对比' +
-      (columns.length < Utils.compare.MAX ? '，还可加入 ' + (Utils.compare.MAX - columns.length) + ' 款' : '') + '。</p>';
+      (columns.length < Utils.compare.MAX ? '，还可加入 ' + (Utils.compare.MAX - columns.length) + ' 款' : '') + '。</p>' +
+      '<p class="field-hint">价格口径：价格以门店实际报价为准；仅当车型已公开标价且价格大于 0 时显示参考价，未公开标价显示「到店询价」，不编造价格。</p>';
   }
 
   function load() {

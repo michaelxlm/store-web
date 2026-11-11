@@ -1,4 +1,4 @@
-/* 同城找店：城市 / 品类筛选 + 关键词 + 就近排序 + 分页 */
+/* 同城找店：城市 / 品类筛选 + 关键词 + 就近排序 + 分页 + 分面计数展示（WO-192） */
 (function () {
   'use strict';
 
@@ -15,6 +15,10 @@
     coords: null,
     loading: false
   };
+
+  // 分面计数：仅当接口显式返回 facets / facetCounts / aggregations / counts 等对象时才展示；
+  // 否则明确标注「当前接口未提供分面计数」，不推算、不伪造计数。
+  var facetState = { available: false, data: null };
 
   var listEl;
   var moreBtn;
@@ -37,6 +41,46 @@
     box.innerHTML = html.join('');
   }
 
+  function extractFacets(res) {
+    if (!res || typeof res !== 'object') return null;
+    var candidates = [res.facets, res.facetCounts, res.aggregations, res.counts, res.facet_counts];
+    if (res.data && typeof res.data === 'object') {
+      candidates.push(res.data.facets, res.data.facetCounts, res.data.aggregations, res.data.counts);
+    }
+    for (var i = 0; i < candidates.length; i++) {
+      var v = candidates[i];
+      if (v && typeof v === 'object' && !Array.isArray(v) && Object.keys(v).length) return v;
+    }
+    return null;
+  }
+
+  function facetText(data) {
+    return Object.keys(data).slice(0, 2).map(function (k) {
+      var v = data[k];
+      if (v && typeof v === 'object' && !Array.isArray(v)) {
+        return k + '：' + Object.keys(v).slice(0, 5).map(function (n) {
+          return n + '(' + v[n] + ')';
+        }).join('、');
+      }
+      return k + '：' + String(v);
+    }).join('；');
+  }
+
+  function renderFacetSummary(total) {
+    var box = document.getElementById('city-facet-summary');
+    if (!box) return;
+    var parts = ['已选：' + (state.city || '全部城市') + ' · ' + (state.category || '全部品类')];
+    if (state.keyword) parts.push('关键词「' + state.keyword + '」');
+    if (state.nearby) parts.push('按距离排序');
+    parts.push('结果 ' + Utils.num(total, 0) + ' 条');
+    if (facetState.available && facetState.data) {
+      parts.push('分面计数（接口返回）：' + facetText(facetState.data));
+    } else {
+      parts.push('当前接口未提供分面计数');
+    }
+    box.textContent = parts.join(' · ');
+  }
+
   function loadFilters() {
     HttpApi.store.getFilters({}).then(function (res) {
       var data = (res && res.data) || {};
@@ -44,6 +88,9 @@
       var categories = (data.categories || []).map(normalizeOption).filter(Boolean);
       renderChips('city-cities', 'city', cities, '全部城市');
       renderChips('city-categories', 'category', categories, '全部品类');
+      var f = extractFacets(res);
+      if (f) { facetState.available = true; facetState.data = f; }
+      renderFacetSummary(totalEl ? totalEl.textContent : 0);
     });
   }
 
@@ -78,11 +125,15 @@
     request.then(function (res) {
       state.loading = false;
       var rows = (res && res.rows) || [];
+      var f = extractFacets(res);
+      facetState.available = !!f;
+      facetState.data = f || null;
       if (reset) listEl.innerHTML = '';
       if (!rows.length && reset) {
         listEl.innerHTML = Utils.emptyHtml('没有找到符合条件的门店', '<a class="btn btn-outline btn-sm" href="/merchant/login.html">我要入驻</a>');
         totalEl.textContent = '0';
         moreBtn.hidden = true;
+        renderFacetSummary(0);
         return;
       }
       listEl.insertAdjacentHTML('beforeend', rows.map(function (row) {
@@ -90,6 +141,7 @@
       }).join(''));
       var total = Utils.num(res && (res.total !== undefined ? res.total : res.count), rows.length);
       totalEl.textContent = reset ? String(total) : String(Utils.num(totalEl.textContent) + rows.length);
+      renderFacetSummary(totalEl.textContent);
       if (res && res.hasMore) {
         state.pageIndex += 1;
         moreBtn.hidden = false;

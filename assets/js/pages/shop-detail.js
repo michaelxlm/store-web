@@ -134,6 +134,52 @@
     });
   }
 
+  var PRICE_INQUIRY_LABEL = '到店询价';
+
+  /** 可见价格口径说明（与静态模板 / JSON-LD 一致） */
+  function renderPriceNote(price) {
+    var note = el('detail-price-note');
+    if (!note) return;
+    note.textContent = price > 0
+      ? '价格口径：该车型已公开标价，展示参考价；参考价以门店实际报价为准，具体成交价请到店确认。'
+      : '价格口径：该车型未公开标价或价格为 0，本页不展示具体价格，请' + PRICE_INQUIRY_LABEL + '。';
+  }
+
+  /**
+   * 运行时把 Product JSON-LD 与静态口径对齐：
+   * goods_price > 0 → offers.price + priceCurrency(CNY)；否则 offers 不带 price。
+   * 只写接口真实返回的字段，不写 availability（不编造库存）。
+   */
+  function syncProductJsonLd(data, price) {
+    var script = document.querySelector('script[type="application/ld+json"]');
+    if (!script) return;
+    var json;
+    try { json = JSON.parse(script.textContent); } catch (e) { return; }
+    var graph = json && json['@graph'];
+    if (!Array.isArray(graph)) return;
+    var product = null;
+    for (var i = 0; i < graph.length; i++) {
+      if (graph[i] && graph[i]['@type'] === 'Product') { product = graph[i]; break; }
+    }
+    if (!product) return;
+    if (data.name) product.name = String(data.name);
+    if (data.goods_desc) {
+      product.description = Utils.truncate(String(data.goods_desc).replace(/<[^>]*>/g, ''), 110);
+    }
+    var id = String(data._id || data.id || '');
+    if (id) product.sku = String(data.sku || data.goods_sn || id);
+    var offers = {
+      '@type': 'Offer',
+      url: location.origin + location.pathname + '?id=' + encodeURIComponent(id)
+    };
+    if (price > 0) {
+      offers.price = String(price);
+      offers.priceCurrency = 'CNY';
+    }
+    product.offers = offers;
+    script.textContent = JSON.stringify(json).replace(/</g, '\\u003c');
+  }
+
   function render(data) {
     goods = data || {};
     var name = goods.name || '车型详情';
@@ -149,7 +195,9 @@
     var price = Utils.num(goods.goods_price);
     el('detail-price').innerHTML = price > 0
       ? '<span class="price"><small>¥</small>' + Utils.num(price) + '</span>' + (goods.goods_tip ? '<span class="tag tag-warn">' + Utils.escapeHtml(goods.goods_tip) + '</span>' : '')
-      : '<span class="text-muted">价格面议</span>';
+      : '<span class="text-muted">' + PRICE_INQUIRY_LABEL + '</span>';
+    renderPriceNote(price);
+    syncProductJsonLd(goods, price);
 
     var subParts = [];
     if (goods.shop_name) subParts.push(goods.shop_name);

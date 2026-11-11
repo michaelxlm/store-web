@@ -10,7 +10,9 @@
      2. minify      → assets 下生成 .min 产物
      3. fingerprint → assets/manifest.json（资源版本 token）
      4. prerender   → 逐路由渲染静态 HTML（<path>.html）
-     5. build-sitemap → sitemap.xml（仅可收录静态页；重建时保留既有 DYNAMIC-SITEMAP 块）
+     5. build-sitemap → sitemap.xml（仅可收录静态页；重建时保留既有 DYNAMIC-SITEMAP / ENTITY-PAGES-SITEMAP 块）
+     5.2 build-entity-pages（可选实体快照）→ 车型/门店/文章静态详情页骨架 + ENTITY-PAGES-SITEMAP 块；
+         无快照时仅输出「暂无实体快照，跳过静态化，沿用运行时详情页」并跳过，不产出空壳页，异常不阻断构建
      5.5 build-sitemap-dynamic（接中台 API）→ 枚举商品/店铺/活动/文章的 ?id= 详情页，
          写入 sitemap.xml 的 DYNAMIC-SITEMAP 标记块；API 不可达/异常自动跳过，不阻断构建
      6. build-llms  → robots.txt + llms.txt
@@ -88,6 +90,14 @@ async function main() {
   }
 
   buildSitemap.run();
+
+  // 可选实体快照 → 可收录静态详情页骨架 + 实体 sitemap 条目（WO-192）
+  // 缺省无快照时脚本只输出「暂无实体快照，跳过静态化，沿用运行时详情页」并跳过，不产出空壳页
+  try {
+    require('./build-entity-pages').run();
+  } catch (e) {
+    console.warn('[build] entity-pages 跳过（不影响主构建）：', e && e.message);
+  }
 
   // 动态详情页进 sitemap：接中台 API 枚举 ?id= 详情页（商品/店铺/活动/文章）
   // API 不可达或异常时自动跳过，绝不阻断构建

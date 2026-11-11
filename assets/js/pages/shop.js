@@ -1,4 +1,4 @@
-/* 全部车型：关键词 / 分类标签 / 价格区间 / 排序 + 分页加载 */
+/* 全部车型：关键词 / 分类标签 / 价格区间 / 排序 + 分页加载 + 分面计数展示（WO-192） */
 (function () {
   'use strict';
 
@@ -19,6 +19,10 @@
     total: 0
   };
 
+  // 分面计数：仅当接口显式返回 facets / facetCounts / aggregations / counts 等对象时才展示；
+  // 否则明确标注「当前接口未提供分面计数」，不推算、不伪造计数。
+  var facetState = { available: false, data: null };
+
   var grid;
   var moreBtn;
   var totalEl;
@@ -36,6 +40,49 @@
     if (state.minPrice !== '') data.minPrice = state.minPrice;
     if (state.maxPrice !== '') data.maxPrice = state.maxPrice;
     return data;
+  }
+
+  function extractFacets(res) {
+    if (!res || typeof res !== 'object') return null;
+    var candidates = [res.facets, res.facetCounts, res.aggregations, res.counts, res.facet_counts];
+    if (res.data && typeof res.data === 'object') {
+      candidates.push(res.data.facets, res.data.facetCounts, res.data.aggregations, res.data.counts);
+    }
+    for (var i = 0; i < candidates.length; i++) {
+      var v = candidates[i];
+      if (v && typeof v === 'object' && !Array.isArray(v) && Object.keys(v).length) return v;
+    }
+    return null;
+  }
+
+  function facetText(data) {
+    return Object.keys(data).slice(0, 2).map(function (k) {
+      var v = data[k];
+      if (v && typeof v === 'object' && !Array.isArray(v)) {
+        return k + '：' + Object.keys(v).slice(0, 5).map(function (n) {
+          return n + '(' + v[n] + ')';
+        }).join('、');
+      }
+      return k + '：' + String(v);
+    }).join('；');
+  }
+
+  function renderFacetSummary(total) {
+    var box = document.getElementById('shop-facet-summary');
+    if (!box) return;
+    var parts = ['已选：' + (state.tag === 'all' ? '全部分类' : state.tag)];
+    if (state.keyword) parts.push('关键词「' + state.keyword + '」');
+    if (state.minPrice !== '' || state.maxPrice !== '') {
+      parts.push('价格 ' + (state.minPrice === '' ? '不限' : state.minPrice) + '–' + (state.maxPrice === '' ? '不限' : state.maxPrice));
+    }
+    parts.push('排序 ' + state.sortBy);
+    parts.push('结果 ' + Utils.num(total, 0) + ' 条');
+    if (facetState.available && facetState.data) {
+      parts.push('分面计数（接口返回）：' + facetText(facetState.data));
+    } else {
+      parts.push('当前接口未提供分面计数');
+    }
+    box.textContent = parts.join(' · ');
   }
 
   function render(list, reset) {
@@ -61,8 +108,12 @@
       var rows = (res && res.rows) || [];
       state.total = Utils.num(res && (res.total !== undefined ? res.total : res.count), rows.length);
       state.hasMore = !!(res && res.hasMore);
+      var f = extractFacets(res);
+      facetState.available = !!f;
+      facetState.data = f || null;
       if (totalEl) totalEl.textContent = String(state.total);
       render(rows, reset);
+      renderFacetSummary(state.total);
       if (state.hasMore) {
         state.pageIndex += 1;
         moreBtn.hidden = false;

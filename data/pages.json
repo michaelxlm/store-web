@@ -25,8 +25,8 @@
       "template": "shop-detail",
       "script": "shop-detail",
       "title": "车型详情 - 电动车参数与报价",
-      "description": "查看电动车详细参数、配置与报价，全方位了解车型信息。",
-      "keywords": "电动车详情,车型参数,电动车报价",
+      "description": "查看电动车详细参数、配置与报价。价格以门店实际报价为准：已公开标价的车型显示参考价，未公开标价的车型请到店询价。",
+      "keywords": "电动车详情,车型参数,电动车报价,到店询价",
       "crumb_title": "车型详情",
       "crumbs": [{ "label": "全部车型", "url": "/shop/shop.html" }],
       "indexable": true,
@@ -34,9 +34,9 @@
         {
           "@type": "Product",
           "name": "电动车车型详情",
-          "description": "查看电动车详细参数、配置与报价，全方位了解车型信息。",
+          "description": "查看电动车详细参数、配置与报价。价格以门店实际报价为准：已公开标价的车型显示参考价并写入 offers.price + priceCurrency(CNY)，未公开标价的车型不写价格、请到店询价。",
           "brand": { "@type": "Brand", "name": "东北电动车汇" },
-          "offers": { "@type": "Offer", "availability": "https://schema.org/InStock" }
+          "offers": { "@type": "Offer" }
         }
       ]
     },
@@ -369,6 +369,17 @@
       "crumb_title": "商家入驻套餐",
       "indexable": true,
       "sitemap": { "priority": "0.7", "changefreq": "monthly" }
+    },
+    {
+      "path": "guide/city",
+      "template": "guide-city",
+      "title": "按城市找店与选车导航 - 东北电动车汇",
+      "description": "说明站内「同城找店（城市与品类筛选）→ 店铺信息（门店详情）→ 全部车型（车型列表）」三级导航关系，全部为已存在的站内栏目页。",
+      "keywords": "选车导航,同城找店,店铺信息,全部车型,站内导航,城市门店车型",
+      "crumb_title": "选车路径导航",
+      "crumbs": [{ "label": "同城找店", "url": "/shop/city.html" }],
+      "indexable": true,
+      "sitemap": { "priority": "0.5", "changefreq": "monthly" }
     }
   ]
 }
