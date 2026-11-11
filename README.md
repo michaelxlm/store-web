@@ -1,7 +1,7 @@
 ---
 title: store-web · 东北电动车汇
 owner: Michaelxlm
-updated: 2026-11-07
+updated: 2026-11-11
 scope: store-web
 status: 有效
 tags: [store-web, 静态站]
@@ -35,18 +35,22 @@ robots.txt / llms.txt / sitemap.xml  根级公共产物
 
 ## 构建管线（`scripts/build.js` 串起全流程）
 
+0. slot-loader 自愈（WO-210）— `prerender.js` 已引用 `assets/js/slot-loader.js` 时，先调 `packages/site-sdk/sync.js --only=slot-loader.js` 把该**生成物**物化再构建（deploy.yml 只 checkout + 克隆 packages 单源仓 + `npm ci` + build，**不跑 sync**；单源不可得或未引用时 no-op，不阻断）
 1. `minify.js` — 压缩 CSS/JS
 2. `fingerprint.js` — 资源内容哈希版本化，产出 manifest
 3. `prerender.js` — 逐路由生成 HTML（head SEO/OG/canonical/JSON-LD、header/sidebar/footer/广告券位、FOUC 防护）
 4. `build-sitemap.js` / `build-llms.js` — 生成 sitemap.xml / llms.txt + robots.txt
-5. `inject-scripts.js` — 公共脚本注入守卫
-6. `check-links.js` — 站内死链门禁（缺目标页则构建失败）
+5. `build-entity-pages.js` — 可选实体快照 → 车型/门店/文章静态详情页骨架（无快照则只提示并跳过）
+6. `inject-scripts.js` — 公共脚本注入守卫
+7. `check-links.js` — 站内死链门禁（缺目标页则构建失败）
+8. `check-jsonld.js` — 商家信息结构化数据门禁（缺 price / 缺 image / 空壳 offers 则构建失败）
 
 ## 常用命令
 
 ```bash
 npm run dev            # 本地静态预览
-npm run build          # 全量构建（含死链门禁）
+npm run build          # 全量构建（含死链 + 商家信息门禁）
+npm run check:jsonld   # 只跑商家信息结构化数据门禁
 npm run check:encoding # UTF-8 编码门禁（禁 GBK/双重乱码/BOM）
 ```
 
@@ -55,6 +59,7 @@ npm run check:encoding # UTF-8 编码门禁（禁 GBK/双重乱码/BOM）
 - **编码门禁** `check-encoding.js`：所有文本文件必须为无 BOM 的 UTF-8，杜绝 Windows 侧 GBK / 双重乱码。
 - **死链门禁** `check-links.js`：产物 HTML 的站内绝对链接逐条校验目标文件存在。
 - **反色字 WCAG 门禁** `check-wcag.js`：品牌主色在亮 / 暗令牌下的可读性校验。
+- **商家信息门禁** `check-jsonld.js`：产物 HTML 的每个 ld+json 块必须满足「宁缺毋错」——Product 有 http(s) 绝对 `image`；`offers` 一旦出现就必须带 `price`/`priceSpecification`（带 price 必带 `priceCurrency` 且为正数）；禁止空壳 offers。
 
 ## 收录（SEO）
 
@@ -73,11 +78,25 @@ npm run check:encoding # UTF-8 编码门禁（禁 GBK/双重乱码/BOM）
 | 能力 | 接入方式 |
 | --- | --- |
 | 埋点 | `assets/js/tracker.min.js`，`tracker_project = main-store` |
-| 广告 | `assets/js/ad-slots.min.js` + `data-ad-slot` 标记，`ad_site_key = main-store` |
-| 优惠券位 | `assets/js/coupon-slot.min.js` + `data-coupon-slot` 标记 |
-| 美图位 | `assets/js/img-slot.js`（消费中台 `front/antucao` 的 `image/*` 现役端点） |
+| 广告位 | `assets/js/slot-loader.js`（由 site-sdk 单源把 `ad-slots` / `coupon-slot` / `img-slot` / `mp-slot` 拼接而成，经 `?v=` 版本化）+ `data-ad-slot` 标记，`ad_site_key = main-store` |
+| 优惠券位 | 同上 `slot-loader.js` + `data-coupon-slot` 标记 |
+| 美图位 | 同上 `slot-loader.js`（消费中台 `front/antucao` 的 `image/*` 现役端点）+ `data-img-slot` 标记 |
 | 后端 API | `assets/js/http-api.js` → `https://api.xuyiheng.com`，带 `X-Source-Guard` 头（按 `mainUrl` 放行） |
-| 结构化数据 | 构建期写入 JSON-LD（WebSite / Organization / WebApplication / BreadcrumbList） |
+| 结构化数据 | 构建期写入 JSON-LD（WebSite / Organization / WebApplication / BreadcrumbList）；车型 `Product` 由 `assets/js/pages/shop-detail.js` 运行时按接口真实数据整块注入（见下「商家信息」） |
+
+## 商家信息结构化数据（Search Console「宁缺毋错」口径）
+
+2026-11-11 Search Console 对本站报 4 条商家信息问题，两条**严重问题**会让网页完全不显示商家信息：「应指定 price 或 priceSpecification（在 offers 中）」与「未填写字段 image」。根因是车型详情的静态骨架挂了占位 `Product` + 空 `offers`——构建期既不知道是哪个车型，也没有真实价格与图片，却把 offers 写了出来。现行口径（三处必须一致）：
+
+| 位置 | 行为 |
+| --- | --- |
+| `data/pages.json` 车型详情路由 | 骨架 `jsonld` 为空，**不写占位 Product** |
+| `assets/js/pages/shop-detail.js` `syncProductJsonLd` | 接口返回后整块注入：`name` + 绝对 `image`（与本页可见图集一致）+ `sku`(commodity_code) + `model`；`goods_price > 0` 才写 `offers.price + priceCurrency(CNY)`，否则**整块不写 offers**（可见文案标「到店询价」） |
+| `scripts/build-entity-pages.js` `buildEntityNode` | 快照无合法 `image` → 该页不输出 Product 并打警告；无价格 → 不写 offers；`shippingDetails` / `hasMerchantReturnPolicy` / `priceValidUntil` 仅透传快照真实内容 |
+
+- **不写的字段也是口径**：不写 `availability`（接口 `remain_count` 是 `999999` 占位值）、不写配送与退换货政策（站内无商家政策数据）。这两项在 Search Console 只计**非严重问题**，而编造政策是对消费者的不实陈述，风险远高于一条警告；要消除需先有真实政策页与政策数据。
+- 回归防线：`scripts/check-jsonld.js`（已接入 `build.js` 第 8 步与 `npm run check`）。
+- 线上复验：`?id=` 页的 Product 属运行时注入，需在浏览器渲染后看 `script[type="application/ld+json"]`，或用 Search Console「网址检查 → 已呈现的 HTML」验证。
 
 ## 页脚与站点公共内容（对齐全站）
 

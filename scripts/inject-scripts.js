@@ -27,9 +27,11 @@ const REQUIRED = [
   'assets/css/tokens.min.css',
   'assets/css/theme.min.css',
   'assets/js/tracker.min.js',
-  'assets/js/ad-slots.min.js',
-  'assets/js/coupon-slot.min.js',
-  'assets/js/img-slot.min.js',
+  // WO-210：4 个 slot 外部脚本（ad-slots / coupon-slot / img-slot / mp-slot）合并为单一
+  // slot-loader.js（单源由 site-sdk/sync.js 的 buildSlotLoader 拼接）。原三个 .min 依赖不再
+  // 单独下发，改为校验合并加载器；substring 同时匹配 manifest 站「slot-loader.js?v=<token>」
+  // 与 rename 站「slot-loader.<hash>.js」两种形态。
+  'assets/js/slot-loader.js',
   'assets/js/wx-h5.min.js',
   'assets/js/utils.min.js',
   'assets/js/http-api.min.js',

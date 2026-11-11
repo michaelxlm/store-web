@@ -16,6 +16,8 @@ Disallow: /search/
 Disallow: /webview/
 Disallow: /error/
 
+Allow: /merchant/pricing.html
+
 # AI 搜索爬虫（GEO / LLM-SEO）：允许读取公共内容页
 User-agent: GPTBot
 User-agent: ChatGPT-User

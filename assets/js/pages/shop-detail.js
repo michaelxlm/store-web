@@ -146,38 +146,73 @@
   }
 
   /**
-   * 运行时把 Product JSON-LD 与静态口径对齐：
-   * goods_price > 0 → offers.price + priceCurrency(CNY)；否则 offers 不带 price。
-   * 只写接口真实返回的字段，不写 availability（不编造库存）。
+   * 图片地址 → JSON-LD 可用的绝对 URL（危险协议与空值一律拦掉）
+   * Google 不接受相对地址作为 Product.image，故站内相对路径补 origin。
    */
-  function syncProductJsonLd(data, price) {
+  function ldImageUrl(src) {
+    var raw = Utils.safeUrl(src);
+    if (!raw) return '';
+    if (/^https?:\/\//i.test(raw)) return raw;
+    if (raw.charAt(0) === '/') return location.origin + raw;
+    return location.origin + '/' + raw.replace(/^\.\/+/, '');
+  }
+
+  /**
+   * 运行时整块输出 Product JSON-LD（Search Console「商家信息」口径，宁缺毋错）：
+   *   - 车型名与本页图集必须真实存在 → 否则不写 Product 节点（缺 image 是严重问题）
+   *   - goods_price > 0 → 写 offers.price + priceCurrency(CNY)
+   *     否则不写 offers（有 offers 却缺 price 会被判「应指定 price 或 priceSpecification」）
+   *   - 只写接口真实返回的字段：不写 availability（remain_count 是 999999 占位值）、
+   *     不写 shippingDetails / hasMerchantReturnPolicy（站内无配送与退换货政策数据，不编造）
+   */
+  function syncProductJsonLd(data, price, imgs) {
     var script = document.querySelector('script[type="application/ld+json"]');
     if (!script) return;
     var json;
     try { json = JSON.parse(script.textContent); } catch (e) { return; }
     var graph = json && json['@graph'];
     if (!Array.isArray(graph)) return;
-    var product = null;
-    for (var i = 0; i < graph.length; i++) {
-      if (graph[i] && graph[i]['@type'] === 'Product') { product = graph[i]; break; }
+
+    // 先摘掉旧 Product，保证重渲染幂等（不叠加、不留旧车型的残留字段）
+    var stale = false;
+    for (var i = graph.length - 1; i >= 0; i--) {
+      if (graph[i] && graph[i]['@type'] === 'Product') { graph.splice(i, 1); stale = true; }
     }
-    if (!product) return;
-    if (data.name) product.name = String(data.name);
-    if (data.goods_desc) {
-      product.description = Utils.truncate(String(data.goods_desc).replace(/<[^>]*>/g, ''), 110);
+    function write() {
+      script.textContent = JSON.stringify(json).replace(/</g, '\\u003c');
     }
+
+    var name = String(data.name || '').trim();
+    var image = [];
+    (imgs || []).forEach(function (u) {
+      if (u && image.indexOf(u) === -1) image.push(u);
+    });
     var id = String(data._id || data.id || '');
-    if (id) product.sku = String(data.sku || data.goods_sn || id);
-    var offers = {
-      '@type': 'Offer',
-      url: location.origin + location.pathname + '?id=' + encodeURIComponent(id)
-    };
-    if (price > 0) {
-      offers.price = String(price);
-      offers.priceCurrency = 'CNY';
+    var pageUrl = location.origin + location.pathname + (id ? '?id=' + encodeURIComponent(id) : '');
+
+    if (!name || !image.length) {
+      if (stale) write(); // 数据不足：宁可不写商家信息，也不写会报错的商家信息
+      return;
     }
-    product.offers = offers;
-    script.textContent = JSON.stringify(json).replace(/</g, '\\u003c');
+
+    var product = { '@type': 'Product', name: name, url: pageUrl };
+    product.image = image.length === 1 ? image[0] : image;
+    var desc = String(data.goods_desc || '').replace(/<[^>]*>/g, '').trim();
+    if (desc) product.description = Utils.truncate(desc, 110);
+    var sku = String(data.commodity_code || data.goods_sn || data.sku || '').trim();
+    if (sku) product.sku = sku;
+    if (data.model) product.model = String(data.model);
+    if (data.brand) product.brand = { '@type': 'Brand', name: String(data.brand) };
+    if (price > 0) {
+      product.offers = {
+        '@type': 'Offer',
+        url: pageUrl,
+        price: String(price),
+        priceCurrency: 'CNY'
+      };
+    }
+    graph.push(product);
+    write();
   }
 
   function render(data) {
@@ -197,7 +232,6 @@
       ? '<span class="price"><small>¥</small>' + Utils.num(price) + '</span>' + (goods.goods_tip ? '<span class="tag tag-warn">' + Utils.escapeHtml(goods.goods_tip) + '</span>' : '')
       : '<span class="text-muted">' + PRICE_INQUIRY_LABEL + '</span>';
     renderPriceNote(price);
-    syncProductJsonLd(goods, price);
 
     var subParts = [];
     if (goods.shop_name) subParts.push(goods.shop_name);
@@ -216,6 +250,8 @@
     images = images.map(function (src) { return Utils.safeUrl(src); }).filter(Boolean);
     galleryIndex = 0;
     renderGallery();
+    // 图集就绪后再写商家信息：JSON-LD 的 image 必须与本页可见图集一致
+    syncProductJsonLd(goods, price, images.map(ldImageUrl));
     renderSpecs();
     renderStore();
     renderActions();

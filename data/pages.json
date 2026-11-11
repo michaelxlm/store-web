@@ -30,15 +30,8 @@
       "crumb_title": "车型详情",
       "crumbs": [{ "label": "全部车型", "url": "/shop/shop.html" }],
       "indexable": true,
-      "jsonld": [
-        {
-          "@type": "Product",
-          "name": "电动车车型详情",
-          "description": "查看电动车详细参数、配置与报价。价格以门店实际报价为准：已公开标价的车型显示参考价并写入 offers.price + priceCurrency(CNY)，未公开标价的车型不写价格、请到店询价。",
-          "brand": { "@type": "Brand", "name": "东北电动车汇" },
-          "offers": { "@type": "Offer" }
-        }
-      ]
+      "jsonld": [],
+      "jsonld_note": "车型详情是带 ?id= 的运行时页：构建期不知道是哪个车型，占位 Product（缺 image、空 offers）会被 Search Console 判「应指定 price 或 priceSpecification」「未填写字段 image」两个严重问题，故骨架不写 Product，由 assets/js/pages/shop-detail.js 用接口真实数据整块注入（scripts/check-jsonld.js 守此口径）。"
     },
     {
       "path": "shop/compare",

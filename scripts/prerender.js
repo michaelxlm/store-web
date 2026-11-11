@@ -162,9 +162,9 @@ function renderRoute(site, route, ctx) {
 
   const scriptTags = [
     '    <script src="' + assetUrl('assets/js/tracker.min.js', manifest) + '" defer></script>',
-    '    <script src="' + assetUrl('assets/js/ad-slots.min.js', manifest) + '" defer></script>',
-    '    <script src="' + assetUrl('assets/js/coupon-slot.min.js', manifest) + '" defer></script>',
-    '    <script src="' + assetUrl('assets/js/img-slot.min.js', manifest) + '" defer></script>',
+    // WO-210：ad-slots / coupon-slot / img-slot / mp-slot 四个分片合并为单个 slot-loader.js
+    // （由 site-sdk/sync.js 的 buildSlotLoader 拼接），经 assetUrl 自动带 ?v=<token> 版本化。
+    '    <script src="' + assetUrl('assets/js/slot-loader.js', manifest) + '" defer></script>',
     '    <script src="' + assetUrl('assets/js/wx-h5.min.js', manifest) + '" defer></script>',
     '    <script src="' + assetUrl('assets/js/utils.min.js', manifest) + '" defer></script>',
     '    <script src="' + assetUrl('assets/js/http-api.min.js', manifest) + '" defer></script>',

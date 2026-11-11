@@ -29,9 +29,12 @@
          "url": "/shop/detail/<id>.html",   // 建议提供；规范站内路径，必须与生成路径一致，否则忽略并回退
          "description": "...",              // 可选；以下均为**可选**，仅当真实存在且非空才写入
          "image": "https://...",
-         "sku": "...", "brand": "...",     // goods
+         "sku": "...", "brand": "...", "model": "...", // goods
          "goods_price": 0,                  // goods；>0 才写 offers.price + priceCurrency:CNY
          "priceCurrency": "CNY",
+         "priceValidUntil": "2027-12-31",   // 可选；仅快照真实给出才写
+         "shippingDetails": {...},          // 可选；商家真实配送政策（ShippingRateSettings 对象）原样透传
+         "hasMerchantReturnPolicy": {...},  // 可选；商家真实退换货政策（MerchantReturnPolicy 对象）原样透传
          "address": "...", "telephone": "...", "openingHours": "...", // store
          "datePublished": "...", "author": "..."                      // article
        }
@@ -44,8 +47,18 @@
 
    -------- 价格口径（与 data/pages.json、详情页 JS 完全一致） --------
      goods_price > 0  → offers.price + offers.priceCurrency = "CNY"，可见文案显示参考价
-     goods_price 为 0 / 缺失 → offers 不带 price / priceCurrency，可见文案标注「到店询价」
+     goods_price 为 0 / 缺失 → **整块不写 offers**，可见文案标注「到店询价」
      任何时候都不写 availability（库存状态无快照依据，不编造）。
+
+   -------- 商家信息「宁缺毋错」口径（Search Console 严重问题源头，2026-11-11） --------
+     Product 缺 image、或 offers 缺 price，都会被 Search Console 判为**严重问题**
+     （「未填写字段 image」/「应指定 price 或 priceSpecification」），导致网页无法显示。
+     因此本脚本与详情页 JS 统一遵守：
+       - 快照无合法 image → 该页**不输出 Product 节点**（只留 WebPage / BreadcrumbList），并打警告；
+       - 无真实价格 → 不写 offers（而不是写一个空 offers）；
+       - shippingDetails / hasMerchantReturnPolicy 只透传快照里的真实政策，缺省就缺省（非严重提示），
+         绝不用默认模板代填——编造的退换货/配送政策是对消费者的不实陈述，风险远高于一条警告。
+     同一口径由 scripts/check-jsonld.js 在构建期做门禁复核。
    ========================================================================== */
 
 const fs = require('fs');
@@ -80,10 +93,11 @@ const TYPES = {
 };
 
 // 与 prerender.js 一致的公共依赖（满足 inject-scripts 守卫：每页必须引用）
+// WO-210：ad-slots / coupon-slot / img-slot / mp-slot 四分片已合并为单个 slot-loader.js，与 prerender 同口径
 const CSS_DEPS = ['assets/css/tokens.min.css', 'assets/css/theme.min.css'];
 const JS_DEPS = [
-  'assets/js/tracker.min.js', 'assets/js/ad-slots.min.js', 'assets/js/coupon-slot.min.js',
-  'assets/js/img-slot.min.js', 'assets/js/wx-h5.min.js', 'assets/js/utils.min.js',
+  'assets/js/tracker.min.js', 'assets/js/slot-loader.js',
+  'assets/js/wx-h5.min.js', 'assets/js/utils.min.js',
   'assets/js/http-api.min.js'
 ];
 
@@ -111,6 +125,17 @@ function assetUrl(rel, manifest) {
 function priceOf(entity) {
   const n = Number(entity.goods_price);
   return isFinite(n) && n > 0 ? n : 0;
+}
+/** 图片字段（字符串或数组）→ JSON-LD 可用的绝对 URL；非法/危险协议返回空串 */
+function ldImageUrl(value, origin) {
+  let raw = '';
+  if (Array.isArray(value)) raw = str(value[0]);
+  else if (value && typeof value === 'object') raw = str(value.url || value.src);
+  else raw = str(value);
+  if (!raw || /^javascript:/i.test(raw)) return '';
+  if (/^https?:\/\//i.test(raw)) return raw;
+  if (raw.charAt(0) === '/') return origin + raw;
+  return '';
 }
 function snapshotPath() {
   const i = process.argv.indexOf('--snapshot');
@@ -144,7 +169,57 @@ function cleanGenerated() {
   return removed;
 }
 
-/* JSON-LD：只写快照里真实存在且非空的字段；缺 price 时 offers 不带 price */
+/* 实体节点：只写快照里真实存在且非空的字段；商家信息按「宁缺毋错」门禁，不合格返回 null */
+function buildEntityNode(entity, cfg, site, origin, pageUrl) {
+  const node = { '@type': cfg.ld, name: entity.name, url: pageUrl };
+  if (has(entity.description)) node.description = str(entity.description);
+  const image = ldImageUrl(entity.image, origin);
+  if (image) node.image = image;
+
+  if (cfg.ld === 'Product') {
+    // 无合法图片：不输出 Product（缺 image 是严重问题），由调用方只保留 WebPage / Breadcrumb
+    if (!image) {
+      console.warn('[entity-pages] ' + str(entity.id) + ' 快照缺合法 image，本页不输出 Product 结构化数据（宁缺毋错）');
+      return null;
+    }
+    if (has(entity.sku)) node.sku = str(entity.sku);
+    if (has(entity.brand)) node.brand = { '@type': 'Brand', name: str(entity.brand) };
+    if (has(entity.model)) node.model = str(entity.model);
+    const price = priceOf(entity);
+    if (price > 0) {
+      const offers = {
+        '@type': 'Offer',
+        url: pageUrl,
+        price: String(price),
+        priceCurrency: has(entity.priceCurrency) ? str(entity.priceCurrency) : 'CNY'
+      };
+      if (has(entity.priceValidUntil)) offers.priceValidUntil = str(entity.priceValidUntil);
+      // 政策字段只透传快照真实内容：缺省只丢一条非严重提示，代填则是编造商家政策
+      if (entity.shippingDetails) offers.shippingDetails = entity.shippingDetails;
+      if (entity.hasMerchantReturnPolicy) offers.hasMerchantReturnPolicy = entity.hasMerchantReturnPolicy;
+      node.offers = offers;
+    }
+    // price 为 0 / 缺失：整块不写 offers，可见文案仍标「到店询价」
+  } else if (cfg.ld === 'LocalBusiness') {
+    if (has(entity.telephone)) node.telephone = str(entity.telephone);
+    if (has(entity.openingHours)) node.openingHours = str(entity.openingHours);
+    if (has(entity.address)) {
+      const address = { '@type': 'PostalAddress', streetAddress: str(entity.address) };
+      if (has(entity.addressLocality)) address.addressLocality = str(entity.addressLocality);
+      if (has(entity.addressRegion)) address.addressRegion = str(entity.addressRegion);
+      if (has(entity.addressCountry)) address.addressCountry = str(entity.addressCountry);
+      node.address = address;
+    }
+  } else if (cfg.ld === 'Article') {
+    node.headline = has(entity.headline) ? str(entity.headline) : entity.name;
+    if (has(entity.datePublished)) node.datePublished = str(entity.datePublished);
+    if (has(entity.dateModified)) node.dateModified = str(entity.dateModified);
+    if (has(entity.author)) node.author = entity.author; // 原样透传，不臆断 Person/Organization
+    node.publisher = { '@type': 'Organization', name: site.site_name };
+  }
+  return node;
+}
+
 function buildJsonLd(entity, cfg, site, origin, pageUrl) {
   const graph = [];
   graph.push({
@@ -163,38 +238,8 @@ function buildJsonLd(entity, cfg, site, origin, pageUrl) {
     ]
   });
 
-  const node = { '@type': cfg.ld, name: entity.name, url: pageUrl };
-  if (has(entity.description)) node.description = str(entity.description);
-  if (has(entity.image)) node.image = str(entity.image);
-
-  if (cfg.ld === 'Product') {
-    if (has(entity.sku)) node.sku = str(entity.sku);
-    if (has(entity.brand)) node.brand = { '@type': 'Brand', name: str(entity.brand) };
-    const price = priceOf(entity);
-    const offers = { '@type': 'Offer', url: pageUrl };
-    if (price > 0) {
-      offers.price = String(price);
-      offers.priceCurrency = has(entity.priceCurrency) ? str(entity.priceCurrency) : 'CNY';
-    }
-    node.offers = offers; // 无 price 时不带 price / priceCurrency / availability（不编造库存）
-  } else if (cfg.ld === 'LocalBusiness') {
-    if (has(entity.telephone)) node.telephone = str(entity.telephone);
-    if (has(entity.openingHours)) node.openingHours = str(entity.openingHours);
-    if (has(entity.address)) {
-      const address = { '@type': 'PostalAddress', streetAddress: str(entity.address) };
-      if (has(entity.addressLocality)) address.addressLocality = str(entity.addressLocality);
-      if (has(entity.addressRegion)) address.addressRegion = str(entity.addressRegion);
-      if (has(entity.addressCountry)) address.addressCountry = str(entity.addressCountry);
-      node.address = address;
-    }
-  } else if (cfg.ld === 'Article') {
-    node.headline = has(entity.headline) ? str(entity.headline) : entity.name;
-    if (has(entity.datePublished)) node.datePublished = str(entity.datePublished);
-    if (has(entity.dateModified)) node.dateModified = str(entity.dateModified);
-    if (has(entity.author)) node.author = entity.author; // 原样透传，不臆断 Person/Organization
-    node.publisher = { '@type': 'Organization', name: site.site_name };
-  }
-  graph.push(node);
+  const node = buildEntityNode(entity, cfg, site, origin, pageUrl);
+  if (node) graph.push(node);
   return JSON.stringify({ '@context': 'https://schema.org', '@graph': graph }).replace(/</g, '\\u003c');
 }
 
@@ -223,7 +268,7 @@ function buildHtml(entity, cfg, site, origin, pagePath, manifest) {
     priceHtml = price > 0
       ? '<p class="price"><small>¥</small>' + esc(String(price)) + '</p>'
       : '<p class="text-muted">到店询价</p>';
-    priceNote = '<p class="field-hint" id="entity-price-note">价格口径：仅当车型已公开标价且价格大于 0 时展示参考价并写入 offers.price + priceCurrency(CNY)；未公开标价或价格为 0 时不写价格、标注「到店询价」。价格以门店实际报价为准。</p>';
+    priceNote = '<p class="field-hint" id="entity-price-note">价格口径：仅当车型已公开标价且价格大于 0 时展示参考价，并写入 offers.price + priceCurrency(CNY)；未公开标价或价格为 0 时不写 offers、不编造价格，标注「到店询价」。价格以门店实际报价为准。</p>';
   }
 
   const runtimeUrl = cfg.runtime + '?id=' + encodeURIComponent(entity.id);
