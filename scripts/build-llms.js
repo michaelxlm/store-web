@@ -30,6 +30,15 @@ const DISALLOW = [
   '/error/',
 ];
 
+// robots.txt 例外：整段目录被 Disallow，但其中确有公开、需被收录的页面。
+// Google 采用「最长匹配优先」，此处更精确的 Allow 会覆盖上面的 Disallow，
+// 既放行这些公开页，又继续屏蔽同目录下的管理/登录页。
+// 维护约定：凡 sitemap.xml 收录且 indexable 的路由，若落在某个 Disallow 目录内，
+// 必须在此登记对应路径，否则会被 Search Console 判定「已被 robots.txt 屏蔽」而无法编入索引。
+const ALLOW_EXCEPTIONS = [
+  '/merchant/pricing.html', // 商家入驻套餐报价页：公开营销页，需被收录
+];
+
 function run() {
   const origin = site.url.replace(/\/+$/, '');
 
@@ -41,6 +50,8 @@ function run() {
     'Allow: /',
     '',
     ...DISALLOW.map((p) => 'Disallow: ' + p),
+    '',
+    ...ALLOW_EXCEPTIONS.map((p) => 'Allow: ' + p),
     '',
     '# AI 搜索爬虫（GEO / LLM-SEO）：允许读取公共内容页',
     ...AI_BOTS.map((ua) => 'User-agent: ' + ua),
