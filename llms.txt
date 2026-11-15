@@ -5,20 +5,20 @@
 本站为本地商户综合推广平台，公开页无需登录即可浏览。
 
 ## 核心页面
-- [东北电动车汇](https://store.fangkelianmeng.com/): 东北电动车汇是本地商户综合推广平台，涵盖电动车型号浏览、车型对比、活动优惠与文章资讯，一站式满足选车购车需求。
-- [全部车型](https://store.fangkelianmeng.com/shop/shop.html): 浏览全部电动车型号，按品牌、价格、续航等多维度筛选，找到最适合您的出行座驾。
-- [车型详情](https://store.fangkelianmeng.com/shop/detail.html): 查看电动车详细参数、配置与报价。价格以门店实际报价为准：已公开标价的车型显示参考价，未公开标价的车型请到店询价。
-- [车型对比](https://store.fangkelianmeng.com/shop/compare.html): 最多 3 款电动车横向对比，差异项自动高亮、更优参数标色，支持只看差异与一键分享给好友，帮您做出明智选择。
-- [同城找店](https://store.fangkelianmeng.com/shop/city.html): 按城市与品类搜索本地好店，电动车经销、餐饮门店等本地商户一站式浏览。
-- [店铺信息](https://store.fangkelianmeng.com/shop/store.html): 查看本地商户店铺详情、主营品牌、营业时间与联系方式，支持一键导航到店。
-- [活动中心](https://store.fangkelianmeng.com/event/list.html): 查看最新电动车优惠活动、促销信息与线下活动资讯。
-- [活动详情](https://store.fangkelianmeng.com/event/detail.html): 查看活动时间、门店地址、优惠内容与参与方式。
-- [文章资讯](https://store.fangkelianmeng.com/article/article.html): 电动车行业资讯、选购指南、使用技巧与保养知识。
-- [文章详情](https://store.fangkelianmeng.com/article/detail.html): 阅读电动车行业资讯、选购指南与使用保养知识。
-- [常见问题](https://store.fangkelianmeng.com/faq/faq.html): 常见问题解答，帮助您快速了解平台使用方法。
-- [关于我们](https://store.fangkelianmeng.com/about/wx.html): 东北电动车汇的团队介绍与联系方式。
-- [隐私政策](https://store.fangkelianmeng.com/about/privacy.html): 东北电动车汇隐私政策，说明我们如何收集、使用与保护您的个人信息。
-- [功能清单](https://store.fangkelianmeng.com/feature/index.html): 东北电动车汇平台功能一览：车型浏览、对比、同城找店与活动优惠。
-- [商家入驻套餐与报价](https://store.fangkelianmeng.com/merchant/pricing.html): 东北电动车汇商家入驻年费套餐：开通同城找店公域展示，多档分层报价、权益与卖点一览，帮本地商家获得同城曝光与客流。
-- [按城市找店与选车导航](https://store.fangkelianmeng.com/guide/city.html): 说明站内「同城找店（城市与品类筛选）→ 店铺信息（门店详情）→ 全部车型（车型列表）」三级导航关系，全部为已存在的站内栏目页。
+- [东北电动车汇 · 本地商户综合推广平台](https://store.fangkelianmeng.com/): 东北电动车汇是本地商户综合推广平台，涵盖电动车型号浏览、车型对比、活动优惠与文章资讯，一站式满足选车购车需求。
+- [全部车型 · 电动车型号浏览](https://store.fangkelianmeng.com/shop/shop.html): 浏览全部电动车型号，按品牌、价格、续航等多维度筛选，找到最适合你的出行座驾。
+- [车型详情 · 电动车参数与报价](https://store.fangkelianmeng.com/shop/detail.html): 查看电动车详细参数、配置与报价。价格以门店实际报价为准：已公开标价的车型显示参考价，未公开标价的车型请到店询价。
+- [车型对比 · 电动车参数横向对比](https://store.fangkelianmeng.com/shop/compare.html): 最多 3 款电动车横向对比，差异项自动高亮、更优参数标色，支持只看差异与一键分享给好友，帮你做出明智选择。
+- [同城找店 · 本地商户店铺大全](https://store.fangkelianmeng.com/shop/city.html): 按城市与品类搜索本地好店，电动车经销、餐饮门店等本地商户一站式浏览。
+- [店铺信息 · 东北电动车汇](https://store.fangkelianmeng.com/shop/store.html): 查看本地商户店铺详情、主营品牌、营业时间与联系方式，支持一键导航到店。
+- [活动中心 · 优惠促销与活动资讯](https://store.fangkelianmeng.com/event/list.html): 查看最新电动车优惠活动、促销信息与线下活动资讯。
+- [活动详情 · 东北电动车汇](https://store.fangkelianmeng.com/event/detail.html): 查看活动时间、门店地址、优惠内容与参与方式。
+- [文章资讯 · 电动车行业资讯与选购指南](https://store.fangkelianmeng.com/article/article.html): 电动车行业资讯、选购指南、使用技巧与保养知识。
+- [文章详情 · 东北电动车汇](https://store.fangkelianmeng.com/article/detail.html): 阅读电动车行业资讯、选购指南与使用保养知识。
+- [常见问题 · 使用帮助与问答](https://store.fangkelianmeng.com/faq/faq.html): 常见问题解答，帮助你快速了解平台使用方法。
+- [关于我们 · 东北电动车汇](https://store.fangkelianmeng.com/about/wx.html): 东北电动车汇的团队介绍与联系方式。
+- [隐私政策 · 东北电动车汇](https://store.fangkelianmeng.com/about/privacy.html): 东北电动车汇隐私政策，说明我们如何收集、使用与保护你的个人信息。
+- [功能清单 · 东北电动车汇](https://store.fangkelianmeng.com/feature/index.html): 东北电动车汇平台功能一览：车型浏览、对比、同城找店与活动优惠。
+- [商家入驻套餐与报价 · 东北电动车汇](https://store.fangkelianmeng.com/merchant/pricing.html): 东北电动车汇商家入驻年费套餐：开通同城找店公域展示，多档分层报价、权益与卖点一览，帮本地商家获得同城曝光与客流。
+- [按城市找店与选车导航 · 东北电动车汇](https://store.fangkelianmeng.com/guide/city.html): 说明站内「同城找店（城市与品类筛选）→ 店铺信息（门店详情）→ 全部车型（车型列表）」三级导航关系，全部为已存在的站内栏目页。
 
