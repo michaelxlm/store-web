@@ -72,6 +72,8 @@ npm run check:encoding # UTF-8 编码门禁（禁 GBK/双重乱码/BOM）
 `.github/workflows/deploy.yml`（`push` 到 `main` 或手动触发）在**仓库级 self-hosted runner**（标签 `self-hosted,linux,x64,static-deploy`）上执行：编码门禁 → 构建 → 死链门禁 → 用 `tar` 仅同步**构建产物**（排除 `data/` `scripts/` `templates/` `package.json` `.github/` 等），经 SSH 推送到生产机 `60.205.214.88:/www/wwwroot/store.fangkelianmeng.com/`。
 
 > 新克隆本仓库需先在生产机注册对应仓库的 runner，否则 run 会永久 `queued`。
+>
+> **同步语义**：`tar` 是**增量覆盖**，只新增/覆盖、**不删除**目标端多余文件——构建期删掉的文件线上不会消失，服务器会逐轮累积孤儿产物。该通则与「内容型过期页由谁删」见《静态资源构建与缓存规范》§六之二；本仓当前仍以人工清理兜底。
 
 ## 共用基础设施
 
