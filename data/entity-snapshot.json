@@ -1,0 +1,211 @@
+{
+  "generatedAt": "2026-11-18",
+  "source": "main-api.shop: opendb-mall-goods | stores | shopArticles",
+  "count": 20,
+  "entities": [
+    {
+      "id": "14b1f540697dad02005e298e2ecdb5ae",
+      "type": "goods",
+      "name": "优享2.0超能CE版NKS",
+      "url": "/shop/detail/14b1f540697dad02005e298e2ecdb5ae.html",
+      "description": "优享2.0超能CE版NKS-NKS-靠背版/前后碟刹-钠铅通配-炫珠绿/简洁系",
+      "image": "https://antucao.oss-accelerate.aliyuncs.com/admin/2026/01/31/4381280312515237-2.0CENKSNKS.png",
+      "sku": "W304714Q",
+      "model": "TL1200DT-54T"
+    },
+    {
+      "id": "14b1f540697e10b00067f88d25cc9cdb",
+      "type": "goods",
+      "name": "超能6·QM潮智-ED-智",
+      "url": "/shop/detail/14b1f540697e10b00067f88d25cc9cdb.html",
+      "description": "超能6·QM潮智-ED-智-D-前碟后鼓-细沙棕/F亮橙/F细沙棕/数码系",
+      "image": "https://antucao.oss-accelerate.aliyuncs.com/admin/2026/01/31/6886086854749478-6QMEDDGPSF.png",
+      "sku": "T805702Q",
+      "model": "TL800DQT-30K"
+    },
+    {
+      "id": "25cb905f697daa14005c19164836b676",
+      "type": "goods",
+      "name": "超能S·赤兔2025CE版KF",
+      "url": "/shop/detail/25cb905f697daa14005c19164836b676.html",
+      "description": "超能S·赤兔2025CE版KF",
+      "image": "https://antucao.oss-accelerate.aliyuncs.com/admin/2026/01/31/4326289796923217-S2025CEKFKF.png",
+      "sku": "W301331Q",
+      "model": "TL1200DT-84T"
+    },
+    {
+      "id": "2cf12107697dc8b7005b80e8256e59a9",
+      "type": "goods",
+      "name": "超能6·欣动JXSC-GCG",
+      "url": "/shop/detail/2cf12107697dc8b7005b80e8256e59a9.html",
+      "description": "超能6·欣动JXSC-GCG",
+      "image": "https://antucao.oss-accelerate.aliyuncs.com/admin/2026/01/31/6638720274769588-6JXSCGCGGPF.png",
+      "sku": "T119709Q",
+      "model": "TDT6407Z"
+    },
+    {
+      "id": "57b33370697a2528000af4e71fbdf15d",
+      "type": "goods",
+      "name": "超能S+苍穹PROCE版NKF",
+      "url": "/shop/detail/57b33370697a2528000af4e71fbdf15d.html",
+      "description": "超能S+苍穹PROCE版NKF",
+      "image": "https://antucao.oss-accelerate.aliyuncs.com/admin/2026/01/23/8020187652117837-SPROCENKF.png",
+      "sku": "W305331Q",
+      "model": "TL1200DT-W"
+    },
+    {
+      "id": "57b33370697d87c200559b75014d3af5",
+      "type": "goods",
+      "name": "超能6·繁花CE版KS-智",
+      "url": "/shop/detail/57b33370697d87c200559b75014d3af5.html",
+      "description": "超能6·繁花CE版KS-智",
+      "image": "https://antucao.oss-accelerate.aliyuncs.com/admin/2026/01/31/3633840531848228-6CEKS.png",
+      "sku": "W308118Q",
+      "model": "TL1200DT-68T"
+    },
+    {
+      "id": "57b33370697d9b040057732b23f21285",
+      "type": "goods",
+      "name": "A16优跑CE版",
+      "url": "/shop/detail/57b33370697d9b040057732b23f21285.html",
+      "description": "A16优跑CE版",
+      "image": "https://antucao.oss-accelerate.aliyuncs.com/admin/2026/01/31/4002731862811413-A16CEKDHD.png",
+      "sku": "W311001Q",
+      "model": "TL1200DT-17W"
+    },
+    {
+      "id": "6659ad07697dc36b005e607214d3e8b7",
+      "type": "goods",
+      "name": "超能S·封神PROCE版NHZF",
+      "url": "/shop/detail/6659ad07697dc36b005e607214d3e8b7.html",
+      "description": "超能S·封神PROCE版NHZF-HZS-大护杠/正尾箱版/前后碟刹- 金属红/极夜黑/运动系",
+      "image": "https://antucao.oss-accelerate.aliyuncs.com/admin/2026/01/31/4946309072192133-SPROCENHZFNHZS.png",
+      "sku": "W309227Q",
+      "model": "TL1200DT-83T"
+    },
+    {
+      "id": "8a59a50e697e0cf70066abba4a73c7a0",
+      "type": "goods",
+      "name": "QM潮战超能版-ED(裸车)-智",
+      "url": "/shop/detail/8a59a50e697e0cf70066abba4a73c7a0.html",
+      "description": "QM潮战超能版-ED(裸车)-智",
+      "image": "https://antucao.oss-accelerate.aliyuncs.com/admin/2026/01/31/6822522486846224-QMEDDGPSPF.png",
+      "sku": "T804703Q",
+      "model": "TL800DQT-22K"
+    },
+    {
+      "id": "aca45c22697da643005d16755c520a57",
+      "type": "goods",
+      "name": "A10超能CE版NKS",
+      "url": "/shop/detail/aca45c22697da643005d16755c520a57.html",
+      "description": "A10超能CE版NKS",
+      "image": "https://antucao.oss-accelerate.aliyuncs.com/admin/2026/01/31/4244846012661175-A10CENKSNKS.png",
+      "sku": "W310122Q",
+      "model": "TL1200DT-93T"
+    },
+    {
+      "id": "aca45c22697dc5b70060156d732f11eb",
+      "type": "goods",
+      "name": "菲萌优享C版KG",
+      "url": "/shop/detail/aca45c22697dc5b70060156d732f11eb.html",
+      "description": "菲萌优享C版KG",
+      "image": "https://antucao.oss-accelerate.aliyuncs.com/admin/2026/01/31/4988973326666553-CKGKG.png",
+      "sku": "W307601Q",
+      "model": "TL1000DT-65T"
+    },
+    {
+      "id": "aca45c22697e13d100684f8b00c8cf8a",
+      "type": "goods",
+      "name": "QM大果粒优享版-CG",
+      "url": "/shop/detail/aca45c22697e13d100684f8b00c8cf8a.html",
+      "description": "QM大果粒优享版-CG",
+      "image": "https://antucao.oss-accelerate.aliyuncs.com/admin/2026/01/31/6989827138576989-QMCGGPPF.png",
+      "sku": "T806501Q",
+      "model": "TL600DQT-46K"
+    },
+    {
+      "id": "b387ab55697d98590056eb2d1e364ff1",
+      "type": "goods",
+      "name": "超能6·蝴蝶CE版NKS",
+      "url": "/shop/detail/b387ab55697d98590056eb2d1e364ff1.html",
+      "description": "超能6·蝴蝶CE版NKS",
+      "image": "https://antucao.oss-accelerate.aliyuncs.com/admin/2026/01/31/3913156713517365-6CENKS.png",
+      "sku": "W309323Q",
+      "model": "TL1200DT-81T"
+    },
+    {
+      "id": "d5951626697d9504005877177db85664",
+      "type": "goods",
+      "name": "优骏2025超能CE版KS-智",
+      "url": "/shop/detail/d5951626697d9504005877177db85664.html",
+      "description": "优骏2025超能CE版KS-智",
+      "image": "https://antucao.oss-accelerate.aliyuncs.com/admin/2026/01/31/3762088035397572-2025CEKS.png",
+      "sku": "W303148Q",
+      "model": "TL1200DT-41T"
+    },
+    {
+      "id": "d5951626697e08a30064869c24a5a21e",
+      "type": "goods",
+      "name": "QM猎豹优跑版-CG(裸车)",
+      "url": "/shop/detail/d5951626697e08a30064869c24a5a21e.html",
+      "description": "QM猎豹优跑版",
+      "image": "https://antucao.oss-accelerate.aliyuncs.com/admin/2026/01/31/6666812028531712-QMCGGFS.png",
+      "sku": "T805402Q",
+      "model": "TL600DQT-35K"
+    },
+    {
+      "id": "d5951626697e184d0065f75754e86174",
+      "type": "goods",
+      "name": "QM圆圆2025超能版-CG(裸车)",
+      "url": "/shop/detail/d5951626697e184d0065f75754e86174.html",
+      "description": "QM圆圆2025超能版-CG(裸车)",
+      "image": "https://antucao.oss-accelerate.aliyuncs.com/admin/2026/01/31/7076594263235877-QMCGGPPF.png",
+      "sku": "T805204Q",
+      "model": "TL600DQT-42K"
+    },
+    {
+      "id": "6a9e541fe9a8ce922cd11048",
+      "type": "store",
+      "name": "望奎大安罗纳多电动车商店",
+      "url": "/shop/store/6a9e541fe9a8ce922cd11048.html",
+      "description": "专注二轮/三轮电动车一站式服务平台！汇聚全国优质车型库，连接本地电动车商家，实时更新行业活动。",
+      "image": "https://antucao.oss-accelerate.aliyuncs.com/admin/2025/12/31/6573943782187583-logo.png",
+      "telephone": "13945506217",
+      "address": "宏达花园小区东1门旁",
+      "addressLocality": "绥化市",
+      "addressRegion": "黑龙江省",
+      "openingHours": "周一至周日 07:00 - 19:00"
+    },
+    {
+      "id": "6a9e541fe9a8ce922cd11049",
+      "type": "store",
+      "name": "望奎台铃电动车",
+      "url": "/shop/store/6a9e541fe9a8ce922cd11049.html",
+      "description": "",
+      "image": "https://antucao.oss-accelerate.aliyuncs.com/admin/2026/05/17/0583119663523526-1102088518274958_20260430090319_27_908.jpg",
+      "telephone": "13945506217",
+      "address": "宏达花园小区对面台铃电动车",
+      "addressLocality": "绥化市",
+      "addressRegion": "黑龙江省",
+      "openingHours": "周一至周日 07:30 - 17:30"
+    },
+    {
+      "id": "6a9e5420e9a8ce922cd11063",
+      "type": "article",
+      "name": "望奎台铃新店开业！五重豪礼引爆全城，低至999元起",
+      "url": "/article/detail/6a9e5420e9a8ce922cd11063.html",
+      "description": "望奎台铃新店开业！五重豪礼引爆全城",
+      "image": "https://antucao.oss-accelerate.aliyuncs.com/admin/2026/05/17/0580768268246987-0136805615838952_20260501100806_79_579.jpg",
+      "datePublished": "2026-07-22"
+    },
+    {
+      "id": "6a9e5420e9a8ce922cd11064",
+      "type": "article",
+      "name": "冬季电动车续航焦虑？台铃这款车解决所有痛点！",
+      "url": "/article/detail/6a9e5420e9a8ce922cd11064.html",
+      "description": "😮昨日深夜，老李在车友群里大吐苦水：“这大冷天的，满电出门连十公里都跑不到，电量直接跌到红线区域，路上冻得人直打哆嗦！” 平心而论，这番话戳中了多少两轮电动车用户的痛点？冬季续航骤降、找充电桩跑断腿、车辆停在路边担心被盗……咱们普通老百姓选择骑两轮车，图的不就是个省心靠谱吗",
+      "image": "",
+      "datePublished": "2026-07-29"
+    }
+  ]
+}
