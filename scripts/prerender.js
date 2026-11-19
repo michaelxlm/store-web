@@ -17,6 +17,7 @@
 const fs = require('fs');
 const path = require('path');
 const P = require('./shared-partials');
+const homeSsr = require('./home-ssr');
 
 const ROOT = path.resolve(__dirname, '..');
 const TPL_DIR = path.join(ROOT, 'templates', 'pages');
@@ -120,10 +121,19 @@ function hasPageAsset(kind, name, ext) {
 }
 
 /* ---------------------------- 读页面正文模板 ---------------------------- */
-function loadContent(route) {
+function loadContent(route, ctx) {
   const tpl = route.template || slugOf(route);
   const file = path.join(TPL_DIR, tpl + '.html');
-  if (fs.existsSync(file)) return fs.readFileSync(file, 'utf8').trim();
+  if (fs.existsSync(file)) {
+    let html = fs.readFileSync(file, 'utf8').trim();
+    // WO-192 首页 SSR：门店 / 车型 / 资讯三区用真实实体快照在构建期渲染，
+    // 快照由 ctx 注入（缺省时模块自行读取），无数据则保留原 loading 占位。
+    if (!route.path || route.path === 'index') {
+      const snapshot = (ctx && ctx.entitySnapshot) || homeSsr.loadSnapshot();
+      html = homeSsr.injectHomeSsr(html, snapshot);
+    }
+    return html;
+  }
   return [
     '        <section class="page-heading">',
     '          <h1>' + P.escapeHtml(route.title.split(' - ')[0]) + '</h1>',
@@ -168,6 +178,8 @@ function renderRoute(site, route, ctx) {
     '    <script src="' + assetUrl('assets/js/wx-h5.min.js', manifest) + '" defer></script>',
     '    <script src="' + assetUrl('assets/js/utils.min.js', manifest) + '" defer></script>',
     '    <script src="' + assetUrl('assets/js/http-api.min.js', manifest) + '" defer></script>',
+    // WO-192：公共搜索联想（header / hero 搜索框；搜索页有专属实现会自动跳过）
+    '    <script src="' + assetUrl('assets/js/search-suggest.min.js', manifest) + '" defer></script>',
   ];
   (Array.isArray(route.extra_scripts) ? route.extra_scripts : []).forEach((name) => {
     if (hasPageAsset('js', name, 'js')) {
@@ -230,7 +242,7 @@ function renderRoute(site, route, ctx) {
     '  <script type="application/ld+json">' + ldJson + '</script>',
   ].filter(Boolean).join('\n');
 
-  const content = loadContent(route);
+  const content = loadContent(route, ctx);
   const header = P.renderHeader(site, route);
   const sidebar = P.renderSidebar(site, route);
   const bottomNav = P.renderBottomNav(site, route);
@@ -243,7 +255,11 @@ function renderRoute(site, route, ctx) {
     slots.push(P.renderImgSlot('main-store'));
   }
 
-  const configScript = '  <script>window.AdSlotsConfig={site:\'main-store\',fallbackSrc:\'\'};window.CouponSlotConfig={mainUrl:\'store.fangkelianmeng.com\',moreUrl:\'https://coupon.zangeng.com/\'};window.ImgSlotConfig={mainUrl:\'store.fangkelianmeng.com\',moreUrl:\'https://img.fangkelianmeng.com/\'};window.TrackerConfig={project:\'main-store\',terminal:\'h5\'};</script>';
+  // WO-192：注入实体快照联想词库（构建期真实词条，搜索联想脚本消费）
+  const ssSnapshot = (ctx && ctx.entitySnapshot) || homeSsr.loadSnapshot();
+  const searchWords = homeSsr.searchWords(ssSnapshot);
+  const configScript = '  <script>window.AdSlotsConfig={site:\'main-store\',fallbackSrc:\'\'};window.CouponSlotConfig={mainUrl:\'store.fangkelianmeng.com\',moreUrl:\'https://coupon.zangeng.com/\'};window.ImgSlotConfig={mainUrl:\'store.fangkelianmeng.com\',moreUrl:\'https://img.fangkelianmeng.com/\'};window.TrackerConfig={project:\'main-store\',terminal:\'h5\'};window.SearchWords=' +
+    JSON.stringify(searchWords).replace(/</g, '\\u003c') + ';</script>';
 
   const body = [
     '<body data-page="' + P.escapeHtml(slug) + '" data-page-id="' + P.escapeHtml(slug) + '" data-path="' + P.escapeHtml(urlPath) + '">',

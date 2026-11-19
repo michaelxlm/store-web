@@ -14,7 +14,7 @@
     "sitemap:dynamic": "node scripts/build-sitemap-dynamic.js",
     "entities": "node scripts/build-entity-pages.js",
     "llms": "node scripts/build-llms.js",
-    "check": "node scripts/check-links.js && node scripts/check-wcag.js && node scripts/check-jsonld.js",
+    "check": "node scripts/check-links.js && node scripts/check-wcag.js && node scripts/check-jsonld.js && node scripts/check-wo192.js",
     "check:encoding": "node scripts/check-encoding.js",
     "check:wcag": "node scripts/check-wcag.js",
     "check:jsonld": "node scripts/check-jsonld.js",

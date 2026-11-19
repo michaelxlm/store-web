@@ -66,6 +66,38 @@
     }).join('；');
   }
 
+  // WO-192 本地 facet：接口无分面计数时，基于当前已加载的真实门店统计城市/品类，
+  // 渲染为可点击 chips；点击走服务端 city/category 筛选，不本地伪造结果。
+  var facetRows = [];
+  function countBy(rows, field) {
+    var counts = Object.create(null);
+    rows.forEach(function (row) {
+      var store = (row && row.data && typeof row.data === 'object') ? Object.assign({}, row.data, row) : (row || {});
+      var val = field === 'city' ? (row && row.city) : store.category;
+      val = String(val == null ? '' : val).trim();
+      if (val) counts[val] = (counts[val] || 0) + 1;
+    });
+    return Object.keys(counts).map(function (k) { return { name: k, count: counts[k] }; })
+      .sort(function (a, b) { return b.count - a.count; }).slice(0, 6);
+  }
+  function renderLocalFacets() {
+    var box = document.getElementById('city-local-facets');
+    if (!box) return;
+    var cities = countBy(facetRows, 'city');
+    var cats = countBy(facetRows, 'category');
+    if (!cities.length && !cats.length) { box.innerHTML = ''; box.hidden = true; return; }
+    function group(label, attr, list) {
+      if (!list.length) return '';
+      return '<span class="filter-label">' + label + '</span><div class="filter-options">' +
+        list.map(function (f) {
+          return '<button type="button" class="chip" data-local-' + attr + '="' + Utils.escapeHtml(f.name) + '">' +
+            Utils.escapeHtml(f.name) + ' <span class="facet-count">' + f.count + '</span></button>';
+        }).join('') + '</div>';
+    }
+    box.hidden = false;
+    box.innerHTML = group('本地城市', 'city', cities) + group('本地品类', 'category', cats);
+  }
+
   function renderFacetSummary(total) {
     var box = document.getElementById('city-facet-summary');
     if (!box) return;
@@ -76,7 +108,7 @@
     if (facetState.available && facetState.data) {
       parts.push('分面计数（接口返回）：' + facetText(facetState.data));
     } else {
-      parts.push('当前接口未提供分面计数');
+      parts.push('城市/品类计数来自当前结果集（本地统计）');
     }
     box.textContent = parts.join(' · ');
   }
@@ -128,12 +160,14 @@
       var f = extractFacets(res);
       facetState.available = !!f;
       facetState.data = f || null;
-      if (reset) listEl.innerHTML = '';
+      if (reset) { listEl.innerHTML = ''; facetRows = []; }
+      facetRows = facetRows.concat(rows);
       if (!rows.length && reset) {
         listEl.innerHTML = Utils.emptyHtml('没有找到符合条件的门店', '<a class="btn btn-outline btn-sm" href="/merchant/login.html">我要入驻</a>');
         totalEl.textContent = '0';
         moreBtn.hidden = true;
         renderFacetSummary(0);
+        renderLocalFacets();
         return;
       }
       listEl.insertAdjacentHTML('beforeend', rows.map(function (row) {
@@ -142,6 +176,7 @@
       var total = Utils.num(res && (res.total !== undefined ? res.total : res.count), rows.length);
       totalEl.textContent = reset ? String(total) : String(Utils.num(totalEl.textContent) + rows.length);
       renderFacetSummary(totalEl.textContent);
+      renderLocalFacets();
       if (res && res.hasMore) {
         state.pageIndex += 1;
         moreBtn.hidden = false;
@@ -187,6 +222,28 @@
 
     bindChips('city-cities', 'city', 'city');
     bindChips('city-categories', 'category', 'category');
+
+    // WO-192：点击本地 facet chip → 走服务端真实筛选，并同步顶部筛选 chips 激活态
+    Utils.delegate(document.getElementById('city-local-facets'), '[data-local-city]', 'click', function () {
+      var val = this.getAttribute('data-local-city') || '';
+      if (!val) return;
+      state.city = val;
+      Utils.qsa('#city-cities .chip').forEach(function (btn) {
+        btn.classList.toggle('is-active', btn.getAttribute('data-city') === val);
+      });
+      Utils.track('city_facet_click', { type: 'city', value: val });
+      load(true);
+    });
+    Utils.delegate(document.getElementById('city-local-facets'), '[data-local-category]', 'click', function () {
+      var val = this.getAttribute('data-local-category') || '';
+      if (!val) return;
+      state.category = val;
+      Utils.qsa('#city-categories .chip').forEach(function (btn) {
+        btn.classList.toggle('is-active', btn.getAttribute('data-category') === val);
+      });
+      Utils.track('city_facet_click', { type: 'category', value: val });
+      load(true);
+    });
 
     document.getElementById('city-search').addEventListener('submit', function (e) {
       e.preventDefault();

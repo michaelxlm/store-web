@@ -1,7 +1,7 @@
 ---
 title: store-web · 东北电动车汇
 owner: Michaelxlm
-updated: 2026-11-11
+updated: 2026-11-19
 scope: store-web
 status: 有效
 tags: [store-web, 静态站]
@@ -27,7 +27,7 @@ tags: [store-web, 静态站]
 data/            站点与路由配置（site.json / pages.json）
 templates/       各页正文模板与公共片段（构建期注入外壳）
 assets/          css / js / img 源资源（构建期压缩 + fingerprint）
-scripts/         构建与门禁脚本（见下）
+scripts/         构建与门禁脚本（见下；含 home-ssr.js 首页三区 SSR 注入）
 .github/workflows/  deploy.yml 部署流水线
 <路由目录>/<页面>.html  构建产物，URL 与磁盘文件一一对应（如 shop/shop.html → /shop/shop.html；首页为根 index.html）
 robots.txt / llms.txt / sitemap.xml  根级公共产物
@@ -38,7 +38,7 @@ robots.txt / llms.txt / sitemap.xml  根级公共产物
 0. slot-loader 自愈（WO-210）— `prerender.js` 已引用 `assets/js/slot-loader.js` 时，先调 `packages/site-sdk/sync.js --only=slot-loader.js` 把该**生成物**物化再构建（deploy.yml 只 checkout + 克隆 packages 单源仓 + `npm ci` + build，**不跑 sync**；单源不可得或未引用时 no-op，不阻断）
 1. `minify.js` — 压缩 CSS/JS
 2. `fingerprint.js` — 资源内容哈希版本化，产出 manifest
-3. `prerender.js` — 逐路由生成 HTML（head SEO/OG/canonical/JSON-LD、header/sidebar/footer/广告券位、FOUC 防护）
+3. `prerender.js` — 逐路由生成 HTML（head SEO/OG/canonical/JSON-LD、header/sidebar/footer/广告券位、FOUC 防护）；首页经 `home-ssr.js` 用实体快照构建期直出门店/车型/资讯三区（见下「首页 SSR」）
 4. `build-sitemap.js` / `build-llms.js` — 生成 sitemap.xml / llms.txt + robots.txt
 5. `build-entity-pages.js` — 可选实体快照 → 车型/门店/文章静态详情页骨架（无快照则只提示并跳过）
 6. `inject-scripts.js` — 公共脚本注入守卫
@@ -60,6 +60,24 @@ npm run check:encoding # UTF-8 编码门禁（禁 GBK/双重乱码/BOM）
 - **死链门禁** `check-links.js`：产物 HTML 的站内绝对链接逐条校验目标文件存在。
 - **反色字 WCAG 门禁** `check-wcag.js`：品牌主色在亮 / 暗令牌下的可读性校验。
 - **商家信息门禁** `check-jsonld.js`：产物 HTML 的每个 ld+json 块必须满足「宁缺毋错」——Product 有 http(s) 绝对 `image`；`offers` 一旦出现就必须带 `price`/`priceSpecification`（带 price 必带 `priceCurrency` 且为正数）；禁止空壳 offers。
+
+## 首页 SSR（WO-192 首屏扩面）
+
+- 首页三区（`#home-stores` / `#home-goods` / `#home-articles`）由 `scripts/home-ssr.js` 在**构建期**读 `data/entity-snapshot.json`（与 `build-entity-pages.js` 同源的真实中台快照）渲染成静态卡片，链接指向已生成的静态详情页，禁用 JS 也能读到门店 / 车型 / 资讯，消除原「首屏全 loading、SEO 不可见、API 失败白屏」。
+- 模板 `templates/pages/home.html` 用 `<!-- ssr:<slot>:start/end -->` 标记区间，注入幂等；无快照 / 该类型无实体时保留原 loading 占位，不产空壳。
+- 活动 / 视频无构建期快照数据，**保留 loading 由运行期 API 拉取**（诚实降级，不编造）；快照补入该类型后按同一机制扩展 `SLOTS` 即可。
+- 诚实口径：快照无价格字段 → 车型 SSR 卡统一显示「到店询价」，与 WO-192 价格口径一致；卡片只渲染快照真实存在的实体与 http(s)/站内绝对地址。
+- 运行期 `assets/js/pages/home.js` 为 SSR 感知：**API 有数据 → 完整交互卡片覆盖 SSR；API 空/失败 → 保留 SSR 内容**（非 SSR 区走空态/失败态），实现「SSR 首屏 + API 增量刷新 + 失败兜底」。SSR 卡带 `data-ssr="1"` 供运行期判定。
+- 改动后必跑 `npm run build` 重生成首页与门禁；`home-ssr.js`（源）/ `templates/pages/home.html`（标记）/ `prerender.js`（注入）/ `home.js`（运行期）四处需保持一致。
+
+## WO-192 三项纯前端能力（2026-11-19 全单交付）
+
+在首页 SSR 之后，三项残留已全部交付归档（见 `main-api/app/docs/knowledge-base/05-项目优化建议.md` §7 WO-192 与处置档案 4.273）：
+
+- **搜索联想**：`assets/js/search-suggest.js` 为 header / hero 搜索框提供输入即联想，词源为构建期注入的 `window.SearchWords`（由 `home-ssr.js#searchWords` 从实体快照提取车型名/sku/model/城市/门店真实词条）+ 本地搜索历史；搜索页已有 `#search-suggest` 专属实现时自动跳过。`prerender.js` 全站注入词库与脚本。
+- **城市→门店→车型三级枢纽**：`build-entity-pages.js` 按门店 `addressLocality` 生成 `guide/city-<slug>.html`（含 CollectionPage + BreadcrumbList JSON-LD，进 sitemap、幂等清理），列出该城市真实门店静态页并给出车型入口，不虚构门店与车型绑定。
+- **本地 facet 分面**：`shop.js` / `shop-city.js` 基于当前已加载的真实结果集统计车型标签、门店城市/品类并渲染可点 chips（带计数），点击走服务端真实筛选；接口无 `facets/facetCounts` 时摘要标注「本地统计」口径，不伪造数据。
+- **防回退守卫**：`scripts/check-wo192.js`（26 项）已接入 `npm run check`。
 
 ## 收录（SEO）
 

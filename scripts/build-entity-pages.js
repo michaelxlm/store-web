@@ -75,7 +75,9 @@ const SITEMAP = path.join(ROOT, 'sitemap.xml');
 const MARK_START = '<!-- ENTITY-PAGES-SITEMAP:START -->';
 const MARK_END = '<!-- ENTITY-PAGES-SITEMAP:END -->';
 const PAGE_MARK = 'data-entity-page'; // 生成页标识，清理时校验，避免误删用户文件
+const HUB_MARK = 'data-city-hub'; // 城市枢纽页标识（WO-192 三级枢纽），与详情页同机制清理
 const NO_SNAPSHOT_MSG = '暂无实体快照，跳过静态化，沿用运行时详情页';
+const HUB_CFG = { dir: 'guide', listLabel: '选车路径导航', listUrl: '/guide/city.html', priority: '0.6', changefreq: 'weekly', runtime: '' };
 
 const TYPES = {
   goods: {
@@ -151,11 +153,15 @@ function cleanGenerated() {
   const files = list && Array.isArray(list.files) ? list.files : [];
   let removed = 0;
   files.forEach((rel) => {
-    if (!/^(shop\/detail|shop\/store|article\/detail)\/[A-Za-z0-9_-]+\.html$/.test(rel)) return;
+    const detail = /^(shop\/detail|shop\/store|article\/detail)\/[A-Za-z0-9_-]+\.html$/.test(rel);
+    const hub = /^guide\/city-[A-Za-z0-9_-]+\.html$/.test(rel);
+    if (!detail && !hub) return;
     const abs = path.join(ROOT, rel.split('/').join(path.sep));
     try {
       if (!fs.existsSync(abs)) return;
-      if (fs.readFileSync(abs, 'utf8').indexOf(PAGE_MARK) === -1) return;
+      const html = fs.readFileSync(abs, 'utf8');
+      const mark = hub ? HUB_MARK : PAGE_MARK;
+      if (html.indexOf(mark) === -1) return;
       fs.unlinkSync(abs);
       removed++;
     } catch (e) { /* 单个文件清理失败不阻断 */ }
@@ -332,6 +338,108 @@ function buildHtml(entity, cfg, site, origin, pagePath, manifest) {
   return head + '\n' + body + '\n';
 }
 
+/* ========== WO-192 三级枢纽：城市 → 门店 → 车型 ========== */
+/** 城市名 → URL 安全 slug（中文保留会导致路径编码问题，统一转 ascii 短码） */
+function citySlug(city) {
+  const raw = str(city);
+  let out = '';
+  for (let i = 0; i < raw.length; i++) {
+    const code = raw.charCodeAt(i);
+    out += /[a-z0-9]/i.test(raw.charAt(i)) ? raw.charAt(i).toLowerCase() : code.toString(16);
+  }
+  return out.slice(0, 32) || 'city';
+}
+
+/** 按 addressLocality（缺省 addressRegion）分组门店，只取快照真实存在的城市 */
+function groupStoresByCity(entities) {
+  const groups = Object.create(null);
+  entities.forEach((e) => {
+    if (e.type !== 'store') return;
+    const city = str(e.addressLocality) || str(e.addressRegion);
+    if (!city) return;
+    if (!groups[city]) groups[city] = [];
+    groups[city].push(e);
+  });
+  return groups;
+}
+
+/** 城市枢纽页：列出该城市门店（链到静态门店页），并给出车型/城市总览入口 */
+function buildCityHubHtml(city, stores, site, origin, pagePath, manifest) {
+  const pageUrl = origin + pagePath;
+  const title = city + '门店与车型导航 - ' + site.site_name;
+  const desc = city + '本地门店一览，查看门店地址、电话与营业信息，并浏览全部在售车型。';
+  const items = stores.map((s) =>
+    '      <li><a href="' + esc('/shop/store/' + s.id + '.html') + '">' + esc(s.name) + '</a>' +
+    (has(s.address) ? '<span class="text-muted"> · ' + esc(str(s.address)) + '</span>' : '') + '</li>'
+  ).join('\n');
+  const ld = JSON.stringify({
+    '@context': 'https://schema.org',
+    '@graph': [
+      { '@type': 'CollectionPage', name: city + '门店与车型', url: pageUrl, inLanguage: 'zh-CN', isPartOf: { '@id': origin + '/#website' } },
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: '首页', item: origin + '/' },
+          { '@type': 'ListItem', position: 2, name: '选车路径导航', item: origin + HUB_CFG.listUrl },
+          { '@type': 'ListItem', position: 3, name: city, item: pageUrl }
+        ]
+      }
+    ]
+  }).replace(/</g, '\\u003c');
+
+  const cssLinks = CSS_DEPS.map((d) => '  <link rel="stylesheet" href="' + esc(assetUrl(d, manifest)) + '">').join('\n');
+  const scriptTags = JS_DEPS.map((d) => '  <script src="' + esc(assetUrl(d, manifest)) + '" defer></script>').join('\n');
+
+  const head = [
+    '<!doctype html>',
+    '<html lang="' + esc(site.lang || 'zh-CN') + '">',
+    '<head>',
+    '  <meta charset="utf-8">',
+    '  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">',
+    '  <title>' + esc(title) + '</title>',
+    '  <meta name="description" content="' + esc(desc) + '">',
+    '  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">',
+    '  <link rel="canonical" href="' + esc(pageUrl) + '">',
+    '  <meta property="og:type" content="website">',
+    '  <meta property="og:title" content="' + esc(city + '门店与车型导航') + '">',
+    '  <meta property="og:description" content="' + esc(desc) + '">',
+    '  <meta property="og:url" content="' + esc(pageUrl) + '">',
+    cssLinks,
+    '  <script type="application/ld+json">' + ld + '</script>',
+    '</head>'
+  ].join('\n');
+
+  const body = [
+    '<body data-page="city-hub" ' + HUB_MARK + '="' + esc(city) + '" data-path="' + esc(pagePath) + '">',
+    '<a class="skip-link" href="#main">跳至内容</a>',
+    '<main class="site-main" id="main">',
+    '  <div class="main-inner">',
+    '    <nav class="breadcrumb" aria-label="面包屑">' +
+      '<a href="/">首页</a><span class="breadcrumb-sep" aria-hidden="true">/</span>' +
+      '<a href="' + esc(HUB_CFG.listUrl) + '">选车路径导航</a>' +
+      '<span class="breadcrumb-sep" aria-hidden="true">/</span><span>' + esc(city) + '</span></nav>',
+    '    <section class="page-heading"><h1>' + esc(city) + '门店与车型</h1><p>' + esc(desc) + '</p></section>',
+    '    <section class="section"><h2 class="section-title">' + esc(city) + '门店（' + stores.length + '）</h2>',
+    '      <ul class="link-list">', items, '      </ul>',
+    '    </section>',
+    '    <section class="section"><h2 class="section-title">继续选车</h2>',
+    '      <div class="chips">',
+    '        <a class="chip" href="/shop/shop.html">查看全部车型</a>',
+    '        <a class="chip" href="' + esc(HUB_CFG.listUrl) + '">选车路径导航</a>',
+    '        <a class="chip" href="/shop/city.html">同城找店</a>',
+    '        <a class="chip" href="/">返回首页</a>',
+    '      </div>',
+    '      <p class="field-hint">三级导航：城市 → 门店 → 车型。门店与车型信息来自实体快照，未公开的信息不虚构。</p>',
+    '    </section>',
+    '  </div>',
+    '</main>',
+    scriptTags,
+    '</body>',
+    '</html>'
+  ].filter(Boolean).join('\n');
+  return head + '\n' + body + '\n';
+}
+
 /* 幂等同步 sitemap.xml 的 ENTITY-PAGES-SITEMAP 块（无实体时移除） */
 function syncSitemap(entries, origin) {
   if (!fs.existsSync(SITEMAP)) return;
@@ -412,12 +520,25 @@ function run() {
     entries.push({ path: pagePath, cfg: cfg });
   });
 
+  // WO-192 三级枢纽：按门店城市生成 city → 门店 → 车型 静态导航页
+  const cityGroups = groupStoresByCity(entities);
+  Object.keys(cityGroups).forEach((city) => {
+    const pagePath = '/guide/city-' + citySlug(city) + '.html';
+    const rel = pagePath.replace(/^\//, '');
+    const html = buildCityHubHtml(city, cityGroups[city], site, origin, pagePath, manifest);
+    const abs = path.join(ROOT, rel.split('/').join(path.sep));
+    fs.mkdirSync(path.dirname(abs), { recursive: true });
+    fs.writeFileSync(abs, html, 'utf8');
+    written.push(rel);
+    entries.push({ path: pagePath, cfg: HUB_CFG });
+  });
+
   fs.writeFileSync(GENERATED_LIST, JSON.stringify({
     generatedAt: new Date().toISOString().slice(0, 10),
     files: written
   }, null, 2) + '\n', 'utf8');
   syncSitemap(entries, origin);
-  console.log('[entity-pages] 生成 ' + written.length + ' 个静态详情页骨架，同步 sitemap ' + entries.length + ' 条实体 URL');
+  console.log('[entity-pages] 生成 ' + written.length + ' 个静态页骨架（含 ' + Object.keys(cityGroups).length + ' 个城市枢纽），同步 sitemap ' + entries.length + ' 条 URL');
   return written.length;
 }
 
@@ -430,4 +551,4 @@ if (require.main === module) {
     process.exit(1);
   }
 }
-module.exports = { run, NO_SNAPSHOT_MSG, TYPES, MARK_START, MARK_END };
+module.exports = { run, NO_SNAPSHOT_MSG, TYPES, MARK_START, MARK_END, HUB_MARK, citySlug, groupStoresByCity };

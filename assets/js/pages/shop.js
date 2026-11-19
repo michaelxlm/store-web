@@ -67,6 +67,35 @@
     }).join('；');
   }
 
+  // WO-192 本地 facet：接口无分面计数时，基于当前已加载的真实结果集统计标签热度，
+  // 渲染为可点击 chips；点击仍走服务端 tag 筛选（真实筛选，不本地伪造结果）。
+  var facetRows = [];
+  function countLocalFacets(rows) {
+    var counts = Object.create(null);
+    rows.forEach(function (g) {
+      var tags = (g && (g.goods_tags || g.tag)) || [];
+      if (!Array.isArray(tags)) tags = [];
+      tags.slice(0, 3).forEach(function (t) {
+        t = String(t == null ? '' : t).trim();
+        if (t) counts[t] = (counts[t] || 0) + 1;
+      });
+    });
+    return Object.keys(counts).map(function (k) { return { name: k, count: counts[k] }; })
+      .sort(function (a, b) { return b.count - a.count; }).slice(0, 6);
+  }
+  function renderLocalFacets() {
+    var box = document.getElementById('shop-local-facets');
+    if (!box) return;
+    var list = countLocalFacets(facetRows);
+    if (!list.length) { box.innerHTML = ''; box.hidden = true; return; }
+    box.hidden = false;
+    box.innerHTML = '<span class="filter-label">热门标签</span><div class="filter-options">' +
+      list.map(function (f) {
+        return '<button type="button" class="chip" data-local-tag="' + Utils.escapeHtml(f.name) + '">' +
+          Utils.escapeHtml(f.name) + ' <span class="facet-count">' + f.count + '</span></button>';
+      }).join('') + '</div>';
+  }
+
   function renderFacetSummary(total) {
     var box = document.getElementById('shop-facet-summary');
     if (!box) return;
@@ -80,7 +109,7 @@
     if (facetState.available && facetState.data) {
       parts.push('分面计数（接口返回）：' + facetText(facetState.data));
     } else {
-      parts.push('当前接口未提供分面计数');
+      parts.push('热门标签计数来自当前结果集（本地统计）');
     }
     box.textContent = parts.join(' · ');
   }
@@ -111,9 +140,12 @@
       var f = extractFacets(res);
       facetState.available = !!f;
       facetState.data = f || null;
+      if (reset) facetRows = [];
+      facetRows = facetRows.concat(rows);
       if (totalEl) totalEl.textContent = String(state.total);
       render(rows, reset);
       renderFacetSummary(state.total);
+      renderLocalFacets();
       if (state.hasMore) {
         state.pageIndex += 1;
         moreBtn.hidden = false;
@@ -180,6 +212,18 @@
       Utils.qsa('#shop-tags .chip').forEach(function (btn) { btn.classList.remove('is-active'); });
       this.classList.add('is-active');
       Utils.track('shop_filter_change', { tag: state.tag });
+      load(true);
+    });
+
+    // WO-192：点击本地 facet chip → 走服务端真实筛选，并同步顶部标签激活态
+    Utils.delegate(document.getElementById('shop-local-facets'), '[data-local-tag]', 'click', function () {
+      var tag = this.getAttribute('data-local-tag') || '';
+      if (!tag) return;
+      state.tag = tag;
+      Utils.qsa('#shop-tags .chip').forEach(function (btn) {
+        btn.classList.toggle('is-active', btn.getAttribute('data-tag') === tag);
+      });
+      Utils.track('shop_facet_click', { tag: tag });
       load(true);
     });
 
