@@ -700,3 +700,18 @@ table { border-collapse: collapse; width: 100%; }
 [data-theme="dark"] .gallery-main img {
   background: var(--surface) !important;
 }
+
+/* ==========================================================================
+   UI-REFRESH-2026 · 令牌级视觉精修（aiWeb 试点后全站推广，2026-11）
+   仅追加、不覆盖既有规则；只用本站语义令牌，亮/暗双主题自动适配。
+   不改结构、不改文案、不改共享 tokens.css / site-shell.css / 门禁色令牌。
+   ========================================================================== */
+
+.hero { padding-top: 48px; padding-bottom: 28px; }
+.hero h1 { letter-spacing: -0.8px; line-height: 1.16; }
+.section { padding-top: 44px; padding-bottom: 44px; }
+.section-title { letter-spacing: -0.4px; }
+.quick-card, .store-card { transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease; }
+.quick-card:hover, .store-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: var(--primary); }
+.btn-primary { box-shadow: 0 8px 22px -12px var(--primary); }
+@media (max-width: 600px) { .hero { padding-top: 32px; padding-bottom: 20px; } .section { padding-top: 32px; padding-bottom: 32px; } }
