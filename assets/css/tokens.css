@@ -38,7 +38,8 @@
   /* 布局 */
   --header-h: 64px;
   --sidebar-w: 220px;
-  --main-max: 1240px;
+  /* W0: 全站统一容器宽度，与 site-shell .ss-wrap(--ss-maxw:1140px) + tokens --maxw 对齐 */
+  --main-max: 1140px;
   --mobile-nav-h: 62px;
 
   /* 字体 */
