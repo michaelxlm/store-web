@@ -5,12 +5,26 @@ name: Deploy store.fangkelianmeng.com
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - '.workbuddy/**'
+      - '.idea/**'
+      - '.gitignore'
+      - '.gitattributes'
   # 允许从管理端（GitHub API workflow_dispatch）手动触发部署，无需重新 push
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-store-fangkelianmeng-com
+  cancel-in-progress: false
+
 jobs:
   deploy:
+    if: github.repository == 'michaelxlm/store-web'
     runs-on: [self-hosted, linux, x64, static-deploy]
+    timeout-minutes: 30
     steps:
       - name: Configure SSH for GitHub checkout
         shell: bash
@@ -21,6 +35,10 @@ jobs:
           mkdir -p /root/.ssh && chmod 700 /root/.ssh
           ssh-keyscan -t rsa,ecdsa,ed25519 github.com >> /root/.ssh/known_hosts 2>/dev/null
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          clean: true
+          fetch-depth: 1
       - name: "Install @xuyiheng/static-build-kit (WO-164 ④ private file: dep)"
         shell: bash
         env:
@@ -65,6 +83,7 @@ jobs:
       - name: Sync to /www/wwwroot/store.fangkelianmeng.com
         shell: bash
         run: |
+          set -o pipefail
           # 只发布静态产物：源码目录（data/scripts/templates）与包描述文件不上线
           tar cf - --exclude=.git --exclude=.github --exclude=.user.ini --exclude=.workbuddy \
             --exclude=data --exclude=scripts --exclude=templates --exclude=package.json \
