@@ -25,7 +25,17 @@ const ROOT = require.main === module
     ? path.resolve(path.dirname(require.main.filename), '..')
     : process.cwd();
 const ASSETS = path.join(ROOT, 'assets');
-const TARGET_DIRS = ['css', 'css/pages', 'js', 'js/pages'].map((d) => path.join(ASSETS, d));
+const TARGET_DIRS = ['css', 'js'].map((d) => path.join(ASSETS, d));
+
+function walkSourceFiles(dir, out = []) {
+  if (!fs.existsSync(dir)) return out;
+  for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, ent.name);
+    if (ent.isDirectory()) walkSourceFiles(full, out);
+    else if (/\.(css|js)$/i.test(ent.name) && !/\.min\.(css|js)$/i.test(ent.name)) out.push(full);
+  }
+  return out;
+}
 
 function minifyCss(src) {
   let out = '';
@@ -92,17 +102,22 @@ function run() {
   let touched = 0;
   let removed = 0;
   TARGET_DIRS.forEach((dir) => {
-    if (!fs.existsSync(dir)) return;
-    fs.readdirSync(dir).forEach((f) => {
-      if (/\.min\.(css|js)$/.test(f)) {
-        if (clean) { fs.unlinkSync(path.join(dir, f)); removed++; }
-        return;
-      }
-      const ext = path.extname(f).toLowerCase();
-      if (ext !== '.css' && ext !== '.js') return;
-      const src = fs.readFileSync(path.join(dir, f), 'utf8');
+    if (clean) {
+      (function cleanDir(current) {
+        if (!fs.existsSync(current)) return;
+        fs.readdirSync(current, { withFileTypes: true }).forEach((ent) => {
+          const full = path.join(current, ent.name);
+          if (ent.isDirectory()) cleanDir(full);
+          else if (/\.min\.(css|js)$/.test(ent.name)) { fs.unlinkSync(full); removed++; }
+        });
+      })(dir);
+      return;
+    }
+    walkSourceFiles(dir).forEach((file) => {
+      const ext = path.extname(file).toLowerCase();
+      const src = fs.readFileSync(file, 'utf8');
       const min = ext === '.css' ? minifyCss(src) : minifyJs(src);
-      const target = path.join(dir, f.replace(/\.(css|js)$/, '.min.$1'));
+      const target = file.replace(/\.(css|js)$/, '.min.$1');
       fs.writeFileSync(target, min + '\n');
       touched++;
     });
@@ -112,4 +127,4 @@ function run() {
 }
 
 if (require.main === module) run();
-module.exports = { run, minifyCss, minifyJs };
+module.exports = { run, minifyCss, minifyJs, walkSourceFiles };
